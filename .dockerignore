@@ -1,0 +1,73 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Build outputs
+dist
+.next
+
+# Development files
+.env.local
+.env.development
+.env.test
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Logs
+logs
+*.log
+
+# Coverage
+coverage
+
+# Testing
+.nyc_output
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Yarn
+.yarn-integrity
+
+# Backup files
+*.backup
+*.bak
+
+# Temporary files
+tmp/
+temp/
+
+# Development database
+dev.db*
+
+# Upload directories (will be mounted as volume)
+uploads/*
+
+# Assets that are not needed in container
+assets/
+attached_assets/ 

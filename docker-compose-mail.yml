@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Complete Mail Server with Postfix + Dovecot
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    container_name: syrian-ministry-mailserver
+    hostname: mail.moct-platform.local
+    env_file: mail.env
+    ports:
+      - "25:25"     # SMTP
+      - "587:587"   # SMTP Submission
+      - "465:465"   # SMTP SSL
+      - "993:993"   # IMAP SSL
+    volumes:
+      - ./mail-data/:/var/mail/
+      - ./mail-config/:/tmp/docker-mailserver/
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    stop_grace_period: 1m
+    healthcheck:
+      test: "ss -lntp | grep -E ':25|:587|:465|:993' || exit 1"
+      timeout: 45s
+      interval: 30s
+      retries: 3
+    cap_add:
+      - NET_ADMIN
+    environment:
+      # Basic Configuration
+      - ENABLE_RSPAMD=1
+      - ENABLE_CLAMAV=1
+      - ENABLE_FAIL2BAN=1
+      - ENABLE_POSTGREY=1
+      - ENABLE_MANAGESIEVE=1
+      
+      # SSL Configuration
+      - SSL_TYPE=self-signed
+      
+      # SMTP Configuration
+      - PERMIT_DOCKER=host
+      - ONE_DIR=1
+      - ENABLE_SPAMASSASSIN=1
+      - SPAMASSASSIN_SPAM_TO_INBOX=1
+      
+      # Domain and Accounts
+      - OVERRIDE_HOSTNAME=mail.moct-platform.local
+
+  # Mail Administration Web Interface
+  rainloop:
+    image: hardware/rainloop
+    container_name: syrian-ministry-webmail
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./rainloop-data:/rainloop/data
+    depends_on:
+      - mailserver
+    restart: always
+
+  # Simple SMTP Relay (Alternative lightweight option)
+  smtp-relay:
+    image: namshi/smtp
+    container_name: syrian-ministry-smtp-relay
+    ports:
+      - "1025:25"
+    environment:
+      - RELAY_NETWORKS=:172.0.0.0/8:10.0.0.0/8:192.168.0.0/16:127.0.0.0/8
+      - SMARTHOST_ADDRESS=
+      - SMARTHOST_PORT=587
+      - SMARTHOST_USER=
+      - SMARTHOST_PASSWORD=
+    restart: always
+
+  # MailHog for Development/Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: syrian-ministry-mailhog
+    ports:
+      - "1026:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    restart: always 
