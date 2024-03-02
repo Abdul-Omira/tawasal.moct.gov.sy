@@ -42,3 +42,5 @@ export default defineConfig({
     }
   }
 });
+
+// Enhanced functionality for better user experience
