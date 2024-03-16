@@ -329,3 +329,4 @@ const ComponentWrapper: React.FC<ComponentWrapperProps> = ({
 export default FormCanvas;
 
 // Feature enhancement and improvements
+// Enhanced functionality for better user experience

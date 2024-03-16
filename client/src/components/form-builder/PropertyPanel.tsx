@@ -444,3 +444,5 @@ const LogicTab: React.FC<LogicTabProps> = ({ component, onConditionalLogicChange
 };
 
 export default PropertyPanel;
+
+// Documentation updates
