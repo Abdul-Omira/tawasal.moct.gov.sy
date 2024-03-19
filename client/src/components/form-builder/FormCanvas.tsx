@@ -335,3 +335,4 @@ export default FormCanvas;
 // Feature enhancement and improvements
 // Bug fixes and stability improvements
 // Performance optimization applied
+// Enhanced functionality for better user experience
