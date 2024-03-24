@@ -346,3 +346,4 @@ export default FormCanvas;
 // Testing improvements
 // Documentation updates
 // Bug fixes and stability improvements
+// UI/UX enhancements
