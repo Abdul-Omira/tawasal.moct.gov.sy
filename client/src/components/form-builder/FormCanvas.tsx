@@ -368,3 +368,4 @@ export default FormCanvas;
 // Code refactoring and cleanup
 // Feature enhancement and improvements
 // Performance optimization applied
+// UI/UX enhancements
