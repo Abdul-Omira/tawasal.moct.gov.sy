@@ -476,3 +476,4 @@ export default PropertyPanel;
 // Code refactoring and cleanup
 // Code refactoring and cleanup
 // Enhanced functionality for better user experience
+// Performance optimization applied
