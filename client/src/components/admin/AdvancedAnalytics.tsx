@@ -533,3 +533,5 @@ const MetricCard: React.FC<MetricCardProps> = ({
 };
 
 export default AdvancedAnalytics;
+
+// UI/UX enhancements
