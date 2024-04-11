@@ -473,3 +473,5 @@ export const Documentation: React.FC<DocumentationProps> = ({ onCopyCode }) => {
 };
 
 export default Documentation;
+
+// Testing improvements
