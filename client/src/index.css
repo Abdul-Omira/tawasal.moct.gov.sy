@@ -1,0 +1,282 @@
+/* Load Syrian Ministry fonts from public fonts directory */
+@font-face {
+  font-family: 'ITF Qomra Arabic';
+  src: url('/fonts/itfQomraArabic-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ITF Qomra Arabic';
+  src: url('/fonts/itfQomraArabic-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ITF Qomra Arabic';
+  src: url('/fonts/itfQomraArabic-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Amiri fonts removed due to corruption - using system fallbacks */
+
+@font-face {
+  font-family: 'Adobe Arabic';
+  src: url('/fonts/AdobeArabic-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'ITF Qomra Arabic', 'Adobe Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  body {
+    font-family: 'ITF Qomra Arabic', 'Adobe Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  input, textarea, select, button {
+    font-family: 'ITF Qomra Arabic', 'Adobe Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  .font-qomra {
+    font-family: 'ITF Qomra Arabic', 'Adobe Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  }
+  
+  .font-amiri {
+    font-family: 'ITF Qomra Arabic', 'Adobe Arabic', serif !important;
+  }
+  
+  .font-ibm {
+    font-family: 'ITF Qomra Arabic', 'Adobe Arabic', 'IBM Plex Sans Arabic', system-ui, sans-serif !important;
+  }
+}
+
+:root {
+  /* New Syrian Ministry Color Palette */
+  
+  /* Green Colors (الأخضر) - More vibrant */
+  --color-green-50: 162 30% 96%;
+  --color-green-100: 162 40% 91%;
+  --color-green-200: 162 50% 82%;
+  --color-green-300: 162 60% 69%;
+  --color-green-400: 162 70% 54%;
+  --color-green-500: 162 100% 28%; /* #00897a - Vibrant brand green */
+  --color-green-600: 162 100% 24%; /* #00796b - Secondary green */
+  --color-green-700: 162 100% 20%; /* #00695c - Dark green */
+  --color-green-800: 162 100% 18%;
+  --color-green-900: 162 100% 15%;
+
+  /* Gold Colors (الذهبي) - More vibrant and shiny */
+  --color-gold-50: 48 60% 98%;
+  --color-gold-100: 48 70% 95%;
+  --color-gold-200: 48 80% 90%; /* #fff9e5 - Light gold */
+  --color-gold-300: 48 85% 80%;
+  --color-gold-400: 48 90% 70%;
+  --color-gold-500: 48 100% 65%; /* #ffcc33 - Bright shiny gold */
+  --color-gold-600: 48 95% 55%; /* #f9b613 - Rich gold */
+  --color-gold-700: 48 90% 45%;
+  --color-gold-800: 48 85% 35%;
+  --color-gold-900: 48 80% 25%;
+
+  /* Maroon Colors (المارون) - More vibrant */
+  --color-maroon-50: 340 70% 96%;
+  --color-maroon-100: 340 80% 91%;
+  --color-maroon-200: 340 85% 82%;
+  --color-maroon-300: 340 90% 69%;
+  --color-maroon-400: 340 95% 54%;
+  --color-maroon-500: 340 90% 45%;
+  --color-maroon-600: 340 85% 40%; /* #c13249 - Vibrant maroon */
+  --color-maroon-700: 340 80% 35%; /* #a72b3f - Rich maroon */
+  --color-maroon-800: 340 75% 25%; /* #7d1f2e - Deep maroon */
+  --color-maroon-900: 340 70% 20%;
+
+  /* Gray/Black Colors (الأسود) */
+  --color-gray-50: 0 0% 98%;
+  --color-gray-100: 0 0% 95%;
+  --color-gray-200: 0 0% 90%;
+  --color-gray-300: 0 0% 82%;
+  --color-gray-400: 0 0% 71%;
+  --color-gray-500: 0 0% 60%;
+  --color-gray-600: 0 0% 51%;
+  --color-gray-700: 0 0% 42%;
+  --color-gray-800: 0 0% 30%; /* #4d4d4d - Medium gray */
+  --color-gray-900: 0 2% 19%; /* #302e2f - Dark gray/black */
+
+  /* Main theme colors using new palette */
+  --background: 0 0% 100%;
+  --foreground: 0 2% 19%; /* Dark gray */
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 30%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 2% 19%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 2% 19%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --primary: 162 100% 28%; /* Vibrant green #00897a */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 48 100% 65%; /* Bright gold #ffcc33 */
+  --secondary-foreground: 0 2% 19%;
+  --accent: 340 85% 40%; /* Vibrant maroon #c13249 */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 162 62% 39%;
+  --radius: 0.5rem;
+
+  /* Chart colors using new palette */
+  --chart-1: 162 62% 39%; /* Main green */
+  --chart-2: 48 40% 74%; /* Main gold */
+  --chart-3: 340 55% 32%; /* Main maroon */
+  --chart-4: 162 100% 22%; /* Secondary green */
+  --chart-5: 340 65% 25%; /* Dark maroon */
+
+  /* Sidebar colors using new palette */
+  --sidebar-background: 162 100% 18%; /* Dark green */
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 162 62% 39%; /* Main green */
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 48 40% 74%; /* Main gold */
+  --sidebar-accent-foreground: 0 2% 19%;
+  --sidebar-border: 162 100% 15%;
+  --sidebar-ring: 162 62% 39%;
+}
+
+.dark {
+  /* Dark mode using new Syrian Ministry palette */
+  --background: 0 2% 8%; /* Very dark gray */
+  --foreground: 0 0% 95%;
+  --muted: 0 2% 15%;
+  --muted-foreground: 0 0% 60%;
+  --popover: 0 2% 8%;
+  --popover-foreground: 0 0% 95%;
+  --card: 0 2% 10%;
+  --card-foreground: 0 0% 95%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --primary: 162 62% 45%; /* Brighter green for dark mode */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 48 40% 65%; /* Brighter gold for dark mode */
+  --secondary-foreground: 0 2% 8%;
+  --accent: 340 55% 40%; /* Brighter maroon for dark mode */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 65%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 162 62% 45%;
+
+  /* Chart colors - dark mode using new palette */
+  --chart-1: 162 62% 50%; /* Bright green */
+  --chart-2: 48 40% 70%; /* Bright gold */
+  --chart-3: 340 55% 45%; /* Bright maroon */
+  --chart-4: 162 100% 30%; /* Secondary green */
+  --chart-5: 340 65% 35%; /* Dark maroon */
+
+  /* Sidebar colors - dark mode using new palette */
+  --sidebar-background: 162 100% 12%; /* Very dark green */
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 162 62% 45%; /* Bright green */
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 48 40% 65%; /* Bright gold */
+  --sidebar-accent-foreground: 0 2% 8%;
+  --sidebar-border: 162 100% 20%;
+  --sidebar-ring: 162 62% 45%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* Arabic specific typography using new fonts */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-qomra;
+    font-weight: 700;
+  }
+  
+  .font-heading {
+    @apply font-qomra;
+    font-weight: 700;
+  }
+  
+  .font-body {
+    @apply font-qomra;
+    font-weight: 400;
+  }
+  
+  .font-light {
+    @apply font-qomra;
+    font-weight: 300;
+  }
+
+  /* Form elements in RTL */
+  input, textarea, select {
+    @apply text-right;
+  }
+
+  /* Global transition settings */
+  .animate-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .animate-move {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+  
+  .animate-fade {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+  
+  .animate-theme {
+    @apply transition-colors duration-200 ease-in-out;
+  }
+  
+  /* Responsive hover effects - only apply on non-touch devices */
+  @media (hover: hover) {
+    .hover-scale:hover {
+      @apply transform scale-105;
+    }
+    
+    .hover-lift:hover {
+      @apply transform -translate-y-1;
+    }
+  }
+}
+
+/* Additional custom styles */
+.form-step:not(.active) {
+  @apply hidden;
+}
+
+.progress-bar-item.completed {
+  @apply bg-primary;
+}
+
+.progress-bar-item.active {
+  @apply bg-secondary;
+}
+
+.progress-bar-item.inactive {
+  @apply bg-muted;
+}

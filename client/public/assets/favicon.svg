@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Gold Eagle Body -->
+  <path fill="#e8b53a" d="M50 10 C70 10 85 20 85 35 C85 45 70 60 50 60 C30 60 15 45 15 35 C15 20 30 10 50 10 Z" />
+  
+  <!-- Wings -->
+  <path fill="#e8b53a" d="M15 35 C10 45 5 65 15 75 C25 65 20 45 15 35 Z" />
+  <path fill="#e8b53a" d="M85 35 C90 45 95 65 85 75 C75 65 80 45 85 35 Z" />
+  
+  <!-- Shield in center -->
+  <path fill="#006E51" d="M40 30 C35 30 30 35 30 40 C30 55 50 65 50 65 C50 65 70 55 70 40 C70 35 65 30 60 30 Z" />
+  
+  <!-- White stripe in center of flag -->
+  <path fill="#ffffff" d="M45 30 C40 30 35 35 35 40 C35 55 50 65 50 65 L50 30 Z" />
+  
+  <!-- Red stars -->
+  <path fill="#d81e34" d="M42.5 35 L45 40 L40 38 L45 38 L40 40 Z" />
+  <path fill="#d81e34" d="M42.5 45 L45 50 L40 48 L45 48 L40 50 Z" />
+  <path fill="#d81e34" d="M42.5 55 L45 60 L40 58 L45 58 L40 60 Z" />
+  
+  <!-- Ribbon at bottom -->
+  <path fill="#006E51" d="M30 75 C35 70 65 70 70 75 C65 80 35 80 30 75 Z" />
+</svg>

@@ -1,0 +1,46 @@
+services:
+  # Web application service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/ministry_communication
+      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_NAME=مدير النظام
+      - EMPLOYEE_USERNAME=employee
+      - EMPLOYEE_PASSWORD=${EMPLOYEE_PASSWORD}
+      - EMPLOYEE_NAME=موظف من
+    networks:
+      - ministry-communication-network
+
+  # PostgreSQL database
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5431:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=ministry_communication
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ministry-communication-network
+
+networks:
+  ministry-communication-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
