@@ -85,7 +85,7 @@ const SimpleHeader: React.FC = () => {
             </Link>
             
             {isAdmin && (
-              <Link href="/mgt-system-2025" className="text-muted-foreground hover:text-primary font-medium animate-theme">
+              <Link href="/mgt-system-2024" className="text-muted-foreground hover:text-primary font-medium animate-theme">
                 لوحة التحكم
               </Link>
             )}
@@ -154,7 +154,7 @@ const SimpleHeader: React.FC = () => {
             
             {isAdmin && (
               <Link 
-                href="/mgt-system-2025" 
+                href="/mgt-system-2024" 
                 className="block py-2 px-4 text-muted-foreground hover:bg-gray-50 hover:text-primary rounded-md animate-smooth"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

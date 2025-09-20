@@ -258,7 +258,7 @@ export class DatabaseStorage implements IStorage {
       console.log("Creating citizen communication (sensitive info redacted)");
       console.log("Input data keys:", Object.keys(communication));
       
-      // Only include fields that exist in the database schema
+      // Include ALL fields that exist in the database schema, including metadata
       const sanitizedData = {
         fullName: communication.fullName,
         email: communication.email,
@@ -273,7 +273,30 @@ export class DatabaseStorage implements IStorage {
         captchaAnswer: communication.captchaAnswer,
         consentToDataUse: communication.consentToDataUse,
         status: "pending",
-        createdAt: new Date()
+        createdAt: new Date(),
+        // ✅ ADD METADATA FIELDS
+        ipAddress: communication.ipAddress,
+        geolocation: communication.geolocation,
+        ispInfo: communication.ispInfo,
+        vpnDetection: communication.vpnDetection,
+        hostingProvider: communication.hostingProvider,
+        userAgent: communication.userAgent,
+        browserInfo: communication.browserInfo,
+        deviceType: communication.deviceType,
+        language: communication.language,
+        screenResolution: communication.screenResolution,
+        timezone: communication.timezone,
+        touchSupport: communication.touchSupport,
+        batteryStatus: communication.batteryStatus,
+        installedFonts: communication.installedFonts,
+        referrerUrl: communication.referrerUrl,
+        pageUrl: communication.pageUrl,
+        pageLoadTime: communication.pageLoadTime,
+        javascriptEnabled: communication.javascriptEnabled,
+        cookiesEnabled: communication.cookiesEnabled,
+        doNotTrack: communication.doNotTrack,
+        browserPlugins: communication.browserPlugins,
+        webglFingerprint: communication.webglFingerprint
       };
       
       console.log("Sanitized data keys:", Object.keys(sanitizedData));
@@ -599,7 +622,8 @@ export class DatabaseStorage implements IStorage {
     const attachmentTypeResults = await db
       .select({
         type: citizenCommunications.attachmentType,
-        count: sql<number>`count(*)`      })
+        count: sql<number>`count(*)`
+      })
       .from(citizenCommunications)
       .where(sql`${citizenCommunications.attachmentType} IS NOT NULL`)
       .groupBy(citizenCommunications.attachmentType);
@@ -1051,4 +1075,3 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
-

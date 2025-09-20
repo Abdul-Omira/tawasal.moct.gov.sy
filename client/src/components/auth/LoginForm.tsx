@@ -60,7 +60,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         };
         
         // Use the apiRequest function for API calls
-        const res = await apiRequest('POST', '/api/auth/login', loginData);
+        const res = await apiRequest('POST', '/api/login', loginData);
         
         if (!res.ok) {
           const errorData = await res.json();
@@ -95,7 +95,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       });
       
       // Redirect all authenticated users to the dashboard
-      setLocation('/mgt-system-2025');
+      setLocation('/mgt-system-2024');
       
       if (onSuccess) {
         onSuccess();

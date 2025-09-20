@@ -9,7 +9,6 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './lib/i18n';
 import Home from '@/pages/Home';
 import Admin from '@/pages/Admin';
-import FormBuilder from '@/pages/FormBuilder';
 import Confirmation from '@/pages/Confirmation';
 import AuthPage from '@/pages/AuthPage';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
@@ -29,7 +28,7 @@ function Router() {
     
     if (location === '/') {
       currentPage = 'home';
-    } else if (location === '/mgt-system-2025') {
+    } else if (location === '/mgt-system-2024') {
       currentPage = 'admin';
     } else if (location === '/auth') {
       currentPage = 'auth';
@@ -54,8 +53,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home}/>
-      <ProtectedRoute path="/mgt-system-2025" component={Admin} adminOnly={true} />
-      <ProtectedRoute path="/form-builder" component={FormBuilder} adminOnly={true} />
+      <ProtectedRoute path="/mgt-system-2024" component={Admin} adminOnly={true} />
       <Route path="/confirmation" component={Confirmation}/>
       <Route path="/auth" component={AuthPage}/>
       <Route path="/privacy-policy" component={PrivacyPolicy}/>

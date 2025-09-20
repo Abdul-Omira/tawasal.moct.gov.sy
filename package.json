@@ -1,29 +1,10 @@
 {
-  "name": "tawasal.moct.gov.sy",
+  "name": "rest-express",
   "version": "1.0.0",
   "type": "module",
-  "license": "Government of Syria - Ministry of Communications",
-  "author": {
-    "name": "Abdulwahab Omira",
-    "email": "abdulwahab.omira@moct.gov.sy"
-  },
-  "description": "Syrian Ministry of Communication Platform - Official Citizen Communication Portal",
-  "keywords": [
-    "syria",
-    "ministry",
-    "communication",
-    "government",
-    "citizen",
-    "portal"
-  ],
-  "homepage": "https://tawasal.moct.gov.sy",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/syrian-ministry/tawasal.moct.gov.sy"
-  },
+  "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "dev:local": "NODE_ENV=development tsx server/index-local.ts",
     "dev:server": "NODE_ENV=development JWT_SECRET=dev-secret-key tsx server/index.ts",
     "dev:all": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "vite --port 5173 --host 0.0.0.0",
@@ -41,7 +22,6 @@
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.6.2",
-    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.10.0",
     "@ibm/plex": "^6.4.1",
     "@jridgewell/trace-mapping": "^0.3.25",
@@ -74,15 +54,12 @@
     "@radix-ui/react-toggle-group": "^1.1.3",
     "@radix-ui/react-tooltip": "^1.2.0",
     "@tanstack/react-query": "^5.60.5",
-    "@types/bcrypt": "^6.0.0",
     "@types/crypto-js": "^4.2.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/memoizee": "^0.4.12",
     "@types/multer": "^1.4.12",
     "@types/pdfmake": "^0.2.11",
     "@types/pg": "^8.15.4",
-    "@types/react-router-dom": "^5.3.3",
-    "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -125,15 +102,12 @@
     "puppeteer-core": "^24.8.2",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
-    "react-dnd": "^16.0.1",
-    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.55.0",
     "react-i18next": "^15.5.1",
     "react-icons": "^5.4.0",
     "react-resizable-panels": "^2.1.7",
-    "react-router-dom": "^7.8.2",
-    "recharts": "^2.15.4",
+    "recharts": "^2.15.3",
     "sanitize-filename": "^1.6.3",
     "smtp-server": "^3.14.0",
     "tailwind-merge": "^2.6.0",
@@ -148,6 +122,8 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
+    "@replit/vite-plugin-cartographer": "^0.2.7",
+    "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.1.3",
     "@types/better-sqlite3": "^7.6.13",
@@ -177,115 +153,3 @@
     "bufferutil": "^4.0.8"
   }
 }
-
-// Performance optimization applied
-// Performance optimization applied
-// Performance optimization applied
-// Bug fixes and stability improvements
-// Performance optimization applied
-// Bug fixes and stability improvements
-// Performance optimization applied
-// Security improvements implemented
-// Performance optimization applied
-// Security improvements implemented
-// Performance optimization applied
-// Performance optimization applied
-// Performance optimization applied
-// Bug fixes and stability improvements
-// Security improvements implemented
-// Feature enhancement and improvements
-// Feature enhancement and improvements
-// UI/UX enhancements
-// Documentation updates
-// Enhanced functionality for better user experience
-// Documentation updates
-// Enhanced functionality for better user experience
-// Security improvements implemented
-// Performance optimization applied
-// Code refactoring and cleanup
-// Documentation updates
-// Security improvements implemented
-// UI/UX enhancements
-// UI/UX enhancements
-// Enhanced functionality for better user experience
-// UI/UX enhancements
-// Code refactoring and cleanup
-// Security improvements implemented
-// Enhanced functionality for better user experience
-// Enhanced functionality for better user experience
-// Feature enhancement and improvements
-// Documentation updates
-// Enhanced functionality for better user experience
-// Bug fixes and stability improvements
-// Code refactoring and cleanup
-// Code refactoring and cleanup
-// Updated in foundation phase - 2025-09-12T00:10:34.783Z
-// Feature enhancement and improvements
-// Performance optimization applied
-// Feature enhancement and improvements
-// Code refactoring and cleanup
-// Documentation updates
-// Performance optimization applied
-// Security improvements implemented
-// UI/UX enhancements
-// Enhanced functionality for better user experience
-// Code refactoring and cleanup
-// UI/UX enhancements
-// Testing improvements
-// UI/UX enhancements
-// Performance optimization applied
-// Code refactoring and cleanup
-// UI/UX enhancements
-// Updated in foundation phase - 2025-09-12T00:10:35.242Z
-// Updated in foundation phase - 2025-09-12T00:10:35.268Z
-// UI/UX enhancements
-// Enhanced functionality for better user experience
-// Enhanced functionality for better user experience
-// Updated in foundation phase - 2025-09-12T00:10:35.369Z
-// Security improvements implemented
-// Security improvements implemented
-// Security improvements implemented
-// UI/UX enhancements
-// Feature enhancement and improvements
-// Updated in foundation phase - 2025-09-12T00:10:35.515Z
-// Updated in foundation phase - 2025-09-12T00:10:35.540Z
-// Security improvements implemented
-// Code refactoring and cleanup
-// Enhanced functionality for better user experience
-// Performance optimization applied
-// UI/UX enhancements
-// UI/UX enhancements
-// Code refactoring and cleanup
-// Testing improvements
-// Feature enhancement and improvements
-// Testing improvements
-// Bug fixes and stability improvements
-// Testing improvements
-// Documentation updates
-// Updated in foundation phase - 2025-09-12T00:45:53.340Z
-// UI/UX enhancements
-// Security improvements implemented
-// Code refactoring and cleanup
-// Enhanced functionality for better user experience
-// UI/UX enhancements
-// Updated in foundation phase - 2025-09-12T00:45:53.479Z
-// Code refactoring and cleanup
-// Testing improvements
-// Code refactoring and cleanup
-// Documentation updates
-// Performance optimization applied
-// Performance optimization applied
-// Performance optimization applied
-// Security improvements implemented
-// Updated in foundation phase - 2025-09-12T00:45:53.698Z
-// Bug fixes and stability improvements
-// Bug fixes and stability improvements
-// Updated in foundation phase - 2025-09-12T00:45:53.770Z
-// Enhanced functionality for better user experience
-// Documentation updates
-// Bug fixes and stability improvements
-// Enhanced functionality for better user experience
-// Documentation updates
-// Documentation updates
-// Performance optimization applied
-// UI/UX enhancements

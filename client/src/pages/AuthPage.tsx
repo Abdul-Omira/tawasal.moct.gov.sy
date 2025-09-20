@@ -15,7 +15,7 @@ const AuthPage: React.FC = () => {
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      setLocation('/mgt-system-2025');
+      setLocation('/mgt-system-2024');
     }
   }, [isAuthenticated, isLoading, setLocation]);
 
