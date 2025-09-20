@@ -30,7 +30,7 @@ import {
   decryptSensitiveFields,
   SENSITIVE_BUSINESS_FIELDS,
   SENSITIVE_COMMUNICATION_FIELDS
-} from "./encryption";
+} from "../security/encryption";
 
 const scryptAsync = promisify(scrypt);
 

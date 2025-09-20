@@ -1,5 +1,5 @@
-import { storage } from './storage';
-import { hashPassword } from './auth';
+import { storage } from './database/storage';
+import { hashPassword } from './middleware/auth';
 import crypto from 'crypto';
 
 /**

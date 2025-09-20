@@ -9,12 +9,12 @@
 
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./database/storage";
 import { BusinessSubmissionSchema, BusinessSubmission, CitizenCommunicationSchema, CitizenCommunication } from "@shared/schema";
 import { z } from "zod";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { setupAuth, isAuthenticated, isAdmin } from "./auth";
+import { setupAuth, isAuthenticated, isAdmin } from "./middleware/auth";
 import { uploadMiddleware, securityScanMiddleware, handleFileUpload, serveFile } from "./fileUpload";
 import { safeServeSecureFile } from "./secure-file-wrapper";
 import { extractRequestMetadata, mergeMetadata, sanitizeMetadata, type SubmissionMetadata } from "./metadataCapture";
@@ -22,9 +22,9 @@ import {
   initializeMinistryEmail, 
   sendMinisterNotification, 
   sendCitizenConfirmation 
-} from "./ministryEmailService";
+} from "./email/ministryEmailService";
 import { validateSecureCaptcha, generateSecureCaptchaResponse } from "./captcha-secure";
-import { SecureCitizenCommunicationSchema, securityValidationMiddleware } from "./input-security";
+import { SecureCitizenCommunicationSchema, securityValidationMiddleware } from "./security/input-security";
 import { 
   initializeAIService, 
   analyzeCommunication, 
@@ -32,7 +32,7 @@ import {
   getAIStatus, 
   healthCheck, 
   aiChat 
-} from "./aiService";
+} from "./email/aiService";
 
 // Helper function to translate status to Arabic
 function getArabicStatus(status: string): string {
@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   
   // 🚨 HONEYPOT SYSTEM - Must be EARLY to catch attacks before legitimate routes 🚨
-  const { honeypotHandler } = await import('./honeypot');
+  const { honeypotHandler } = await import('./security/honeypot');
   
   // Classic admin routes that attackers typically target
   app.all("/admin", honeypotHandler);
@@ -133,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { uploadLimiter, formLimiter, adminLimiter } = await import('./index');
   
   // Import production security enhancement
-  const { productionSecurityMiddleware, productionRateLimitingMiddleware } = await import('./enhanced-security-seamless-production');
+  const { productionSecurityMiddleware, productionRateLimitingMiddleware } = await import('./security/enhanced-security-seamless-production');
   
   // File upload API endpoint with enhanced security (production ready)
   app.post("/api/uploads", 
