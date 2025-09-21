@@ -17,7 +17,7 @@ if (!process.env.SESSION_SECRET) {
   process.exit(1);
 }
 
-const ENCRYPTION_KEY = process.env.SESSION_SECRET;
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || process.env.SESSION_SECRET;
 
 /**
  * Encrypts a string or object using AES encryption
@@ -61,8 +61,25 @@ export function decrypt(encryptedData: string, asObject: boolean = false): any {
     // Decrypt the data
     const decrypted = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
     
-    // If decryption returns empty, it might not have been encrypted properly
+    // If decryption returns empty, try with SESSION_SECRET as fallback
     if (!decrypted || decrypted.length === 0) {
+      if (process.env.SESSION_SECRET && process.env.SESSION_SECRET !== ENCRYPTION_KEY) {
+        try {
+          const fallbackDecrypted = CryptoJS.AES.decrypt(encryptedData, process.env.SESSION_SECRET).toString(CryptoJS.enc.Utf8);
+          if (fallbackDecrypted && fallbackDecrypted.length > 0) {
+            if (asObject) {
+              try {
+                return JSON.parse(fallbackDecrypted);
+              } catch (e) {
+                return fallbackDecrypted;
+              }
+            }
+            return fallbackDecrypted;
+          }
+        } catch (fallbackError) {
+          // Fallback also failed, continue with original logic
+        }
+      }
       return encryptedData; // Return original if decryption resulted in empty string
     }
     

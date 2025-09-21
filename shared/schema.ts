@@ -29,6 +29,9 @@ export const citizenCommunications = pgTable("citizen_communications", {
   consentToDataUse: boolean("consent_to_data_use").notNull(),
   wantsUpdates: boolean("wants_updates").default(false), // Added wantsUpdates field
   status: text("status").notNull().default("pending"),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  assignedAt: timestamp("assigned_at"),
+  assignedBy: integer("assigned_by").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // Network & Location Metadata
   ipAddress: text("ip_address"),
@@ -142,6 +145,39 @@ export const loginAttempts = pgTable("login_attempts", {
   deviceFingerprint: text("device_fingerprint"),
   success: boolean("success").notNull().default(false),
   attemptTime: timestamp("attempt_time").notNull().defaultNow(),
+});
+
+// Communication assignments table
+export const communicationAssignments = pgTable("communication_assignments", {
+  id: serial("id").primaryKey(),
+  communicationId: integer("communication_id").notNull().references(() => citizenCommunications.id),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  assignedBy: integer("assigned_by").notNull().references(() => users.id),
+  assignmentReason: text("assignment_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  unassignedAt: timestamp("unassigned_at"),
+  unassignedBy: integer("unassigned_by").references(() => users.id),
+  unassignmentReason: text("unassignment_reason"),
+});
+
+// Communication comments table
+export const communicationComments = pgTable("communication_comments", {
+  id: serial("id").primaryKey(),
+  communicationId: integer("communication_id").notNull().references(() => citizenCommunications.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Communication status history table
+export const communicationStatusHistory = pgTable("communication_status_history", {
+  id: serial("id").primaryKey(),
+  communicationId: integer("communication_id").notNull().references(() => citizenCommunications.id),
+  changedBy: integer("changed_by").notNull().references(() => users.id),
+  oldStatus: text("old_status"),
+  newStatus: text("new_status").notNull(),
+  reason: text("reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // Business submission validation schema

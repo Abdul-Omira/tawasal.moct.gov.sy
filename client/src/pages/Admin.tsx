@@ -20,6 +20,7 @@ import { queryClient } from '@/lib/queryClient';
 import { CitizenCommunication } from '@shared/schema';
 import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
 import PageSEO from '@/components/seo/PageSEO';
+import { AssignmentComments } from '@/components/admin/AssignmentComments';
 import { LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { getToken } from '@/lib/jwtUtils';
@@ -967,13 +968,14 @@ const Admin: React.FC = () => {
                       <TableHead className="text-right">المرفقات</TableHead>
                       <TableHead className="text-right">تاريخ الإرسال</TableHead>
                       <TableHead className="text-right">الحالة</TableHead>
+                      <TableHead className="text-right">التعيين</TableHead>
                       <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
-                        <TableCell colSpan={11} className="text-center py-8">
+                        <TableCell colSpan={12} className="text-center py-8">
                           <div className="flex justify-center">
                             <svg className="animate-spin h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -1036,6 +1038,24 @@ const Admin: React.FC = () => {
                           <TableCell className="whitespace-nowrap">
                             {getStatusBadge(submission.status)}
                           </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="text-sm text-foreground">
+                              {submission.assignedToName ? (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-blue-600 font-medium">
+                                    {submission.assignedToName}
+                                  </span>
+                                  {submission.assignedAt && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {formatDate(new Date(submission.assignedAt))}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">غير معين</span>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                             <Button 
                               variant="ghost" 
@@ -1070,7 +1090,7 @@ const Admin: React.FC = () => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                           {searchTerm ? 'لا توجد نتائج مطابقة لبحثك' : 'لا توجد طلبات حاليًا'}
                         </TableCell>
                       </TableRow>
@@ -1439,6 +1459,27 @@ const Admin: React.FC = () => {
               إغلاق
             </Button>
           </DialogFooter>
+          
+          {/* Assignment and Comments Section */}
+          {selectedSubmission && (
+            <div className="mt-6">
+              <AssignmentComments
+                communicationId={selectedSubmission.id}
+                assignedTo={selectedSubmission.assignedTo}
+                assignedAt={selectedSubmission.assignedAt}
+                assignedBy={selectedSubmission.assignedBy}
+                assignedToName={selectedSubmission.assignedToName}
+                assignedByName={selectedSubmission.assignedByName}
+                status={selectedSubmission.status}
+                onAssignmentChange={() => {
+                  // Refresh the data when assignment changes
+                  queryClient.invalidateQueries({ queryKey: ['/api/admin/citizen-communications'] });
+                  queryClient.invalidateQueries({ queryKey: ['/api/admin/statistics'] });
+                  refetch(); // Also manually refetch the current data
+                }}
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -1,0 +1,32 @@
+# Production Docker Compose Configuration
+# Use: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+version: '3.8'
+
+services:
+  app:
+    environment:
+      - NODE_ENV=production
+    read_only: true
+    restart: unless-stopped
+    profiles: []  # Enable by default
+
+  nginx:
+    profiles: []  # Enable by default in production
+
+  db-backup:
+    profiles: []  # Enable by default in production
+
+  log-aggregator:
+    profiles: []  # Enable by default in production
+
+  security-monitor:
+    profiles: []  # Enable by default in production
+
+  # Disable development services
+  mailhog:
+    profiles: ["development"]  # Disable in production
+
+  # Enable production mail server
+  mailserver:
+    profiles: []  # Enable by default in production

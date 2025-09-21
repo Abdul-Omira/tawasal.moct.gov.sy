@@ -17,8 +17,13 @@ import {
   InsertCitizenCommunication,
   businessSubmissions,
   citizenCommunications,
-  users
+  users,
+  communicationAssignments,
+  communicationComments,
+  communicationStatusHistory
 } from "@shared/schema";
+
+
 import { db } from "./db";
 import { eq, desc, sql, and, like, or, asc, gte } from "drizzle-orm";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
@@ -1069,6 +1074,221 @@ export class DatabaseStorage implements IStorage {
       rejected: Number(rejectedResults[0].count),
       byBusinessType
     };
+  }
+
+  // Assignment and Comments Functions
+  async assignCommunication(communicationId: number, assignedTo: number | null, assignedBy: number, customUserName?: string): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Update the communication record
+      await tx
+        .update(citizenCommunications)
+        .set({
+          assignedTo,
+          assignedAt: new Date(),
+          assignedBy
+        })
+        .where(eq(citizenCommunications.id, communicationId));
+
+        // Create assignment record
+        await tx.insert(communicationAssignments).values({
+          communicationId,
+          assignedTo,
+          assignedBy,
+          assignmentReason: customUserName ? `تم تعيين الطلب إلى: ${customUserName}` : 'تم تعيين الطلب'
+        });
+    });
+  }
+
+  async unassignCommunication(communicationId: number): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Update the communication record
+      await tx
+        .update(citizenCommunications)
+        .set({
+          assignedTo: null,
+          assignedAt: null,
+          assignedBy: null
+        })
+        .where(eq(citizenCommunications.id, communicationId));
+
+          // Update assignment record status
+          await tx
+            .update(communicationAssignments)
+            .set({ 
+              unassignedAt: new Date(),
+              unassignedBy: null, // We don't have the current user ID here
+              unassignmentReason: 'تم إلغاء التعيين'
+            })
+            .where(eq(communicationAssignments.communicationId, communicationId));
+    });
+  }
+
+  async addComment(communicationId: number, userId: number, comment: string): Promise<void> {
+    await db.insert(communicationComments).values({
+      communicationId,
+      userId,
+      comment
+    });
+  }
+
+  async getComments(communicationId: number): Promise<any[]> {
+    const comments = await db
+      .select({
+        id: communicationComments.id,
+        comment: communicationComments.comment,
+        createdAt: communicationComments.createdAt,
+        userName: users.name,
+        username: users.username
+      })
+      .from(communicationComments)
+      .leftJoin(users, eq(communicationComments.userId, users.id))
+      .where(eq(communicationComments.communicationId, communicationId))
+      .orderBy(asc(communicationComments.createdAt));
+
+    return comments;
+  }
+
+  async changeCommunicationStatus(communicationId: number, userId: number, newStatus: string, comment?: string): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Get current status
+      const current = await tx
+        .select({ status: citizenCommunications.status })
+        .from(citizenCommunications)
+        .where(eq(citizenCommunications.id, communicationId))
+        .limit(1);
+
+      const oldStatus = current[0]?.status;
+
+      // Update status
+      await tx
+        .update(citizenCommunications)
+        .set({ status: newStatus })
+        .where(eq(citizenCommunications.id, communicationId));
+
+      // Record status change
+      await tx.insert(communicationStatusHistory).values({
+        communicationId,
+        changedBy: userId,
+        oldStatus,
+        newStatus,
+        reason: comment
+      });
+    });
+  }
+
+  async getCommunicationWithAssignment(communicationId: number): Promise<any> {
+    // First get the communication
+    const communication = await db
+      .select()
+      .from(citizenCommunications)
+      .where(eq(citizenCommunications.id, communicationId))
+      .limit(1);
+
+    if (communication.length === 0) {
+      return null;
+    }
+
+    const comm = communication[0];
+    
+    // Get assigned to user info if exists
+    let assignedToName = null;
+    let assignedToUsername = null;
+    if (comm.assignedTo) {
+      const assignedToUser = await db
+        .select({ name: users.name, username: users.username })
+        .from(users)
+        .where(eq(users.id, comm.assignedTo))
+        .limit(1);
+      
+      if (assignedToUser.length > 0) {
+        assignedToName = assignedToUser[0].name;
+        assignedToUsername = assignedToUser[0].username;
+      }
+    } else {
+      // Check for custom assignment in communication_assignments table
+      const customAssignment = await db
+        .select({ assignmentReason: communicationAssignments.assignmentReason })
+        .from(communicationAssignments)
+        .where(
+          and(
+            eq(communicationAssignments.communicationId, communicationId),
+            isNull(communicationAssignments.assignedTo),
+            isNull(communicationAssignments.unassignedAt)
+          )
+        )
+        .orderBy(desc(communicationAssignments.createdAt))
+        .limit(1);
+      
+      if (customAssignment.length > 0) {
+        const reason = customAssignment[0].assignmentReason;
+        // Extract custom user name from reason like "تم تعيين الطلب إلى: أحمد محمد"
+        if (reason && reason.includes('تم تعيين الطلب إلى: ')) {
+          assignedToName = reason.replace('تم تعيين الطلب إلى: ', '');
+        }
+      }
+    }
+
+    // Get assigned by user info if exists
+    let assignedByName = null;
+    let assignedByUsername = null;
+    if (comm.assignedBy) {
+      const assignedByUser = await db
+        .select({ name: users.name, username: users.username })
+        .from(users)
+        .where(eq(users.id, comm.assignedBy))
+        .limit(1);
+      
+      if (assignedByUser.length > 0) {
+        assignedByName = assignedByUser[0].name;
+        assignedByUsername = assignedByUser[0].username;
+      }
+    }
+
+    // Combine the results
+    const result = {
+      ...comm,
+      assignedToName,
+      assignedToUsername,
+      assignedByName,
+      assignedByUsername
+    };
+
+    // Decrypt sensitive fields
+    return safelyDecryptCitizenCommunication(result);
+  }
+
+  async getCommunicationStatusHistory(communicationId: number): Promise<any[]> {
+    const history = await db
+      .select({
+        id: communicationStatusHistory.id,
+        oldStatus: communicationStatusHistory.oldStatus,
+        newStatus: communicationStatusHistory.newStatus,
+        comment: communicationStatusHistory.reason,
+        changedAt: communicationStatusHistory.createdAt,
+        userName: users.name,
+        username: users.username
+      })
+      .from(communicationStatusHistory)
+      .leftJoin(users, eq(communicationStatusHistory.changedBy, users.id))
+      .where(eq(communicationStatusHistory.communicationId, communicationId))
+      .orderBy(asc(communicationStatusHistory.createdAt));
+
+    return history;
+  }
+
+  async getUsers(): Promise<any[]> {
+    const usersList = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        isAdmin: users.isAdmin,
+        createdAt: users.createdAt
+      })
+      .from(users)
+      .orderBy(asc(users.name));
+
+    return usersList;
   }
 
 

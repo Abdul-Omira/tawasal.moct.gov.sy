@@ -1,0 +1,31 @@
+# Docker Compose Override for Development
+# This file is automatically loaded by docker-compose
+# Use: docker-compose up (loads both docker-compose.yml and this file)
+
+version: '3.8'
+
+services:
+  app:
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3000:5000"  # Map to port 3000 for development
+    volumes:
+      - .:/app  # Mount source code for hot reload
+      - /app/node_modules  # Exclude node_modules
+    read_only: false
+    restart: "no"
+
+  db:
+    ports:
+      - "5432:5432"  # Expose database port for development
+    restart: "no"
+
+  redis:
+    ports:
+      - "6379:6379"  # Expose redis port for development
+    restart: "no"
+
+  # Enable mailhog for development
+  mailhog:
+    profiles: []  # Enable by default in development

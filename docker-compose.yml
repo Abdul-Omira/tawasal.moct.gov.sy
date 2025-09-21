@@ -1,46 +1,296 @@
+version: '3.8'
+
+# Syrian Ministry of Communication Platform
+# Smart Docker Compose Configuration
+# Supports both development and production environments
+
 services:
-  # Web application service
+  # Main Application Service
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: unless-stopped
+      target: ${DOCKER_TARGET:-production}
+    container_name: ${CONTAINER_PREFIX:-moct}-app
+    restart: ${RESTART_POLICY:-unless-stopped}
     ports:
-      - "5000:5000"
-    depends_on:
-      - db
+      - "${APP_PORT:-5000}:5000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=5000
       - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/ministry_communication
       - SESSION_SECRET=${SESSION_SECRET}
       - JWT_SECRET=${JWT_SECRET}
-      - ADMIN_USERNAME=admin
+      - FILE_ACCESS_SECRET=${FILE_ACCESS_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_NAME=مدير النظام
-      - EMPLOYEE_USERNAME=employee
+      - ADMIN_NAME=${ADMIN_NAME:-مدير النظام}
+      - EMPLOYEE_USERNAME=${EMPLOYEE_USERNAME:-employee}
       - EMPLOYEE_PASSWORD=${EMPLOYEE_PASSWORD}
-      - EMPLOYEE_NAME=موظف من
+      - EMPLOYEE_NAME=${EMPLOYEE_NAME:-موظف من}
+      - SECURE_UPLOADS_DIR=/var/secure-uploads
+      - TZ=Asia/Damascus
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+      - secure_uploads:/var/secure-uploads
+      - ./backups:/app/backups:ro
     networks:
-      - ministry-communication-network
+      - ministry-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    read_only: ${READ_ONLY:-true}
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
 
-  # PostgreSQL database
+  # PostgreSQL Database
   db:
     image: postgres:16-alpine
-    restart: unless-stopped
-    ports:
-      - "5431:5432"
+    container_name: ${CONTAINER_PREFIX:-moct}-db
+    restart: ${RESTART_POLICY:-unless-stopped}
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=ministry_communication
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C
+      - TZ=Asia/Damascus
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+      - ./migrations:/docker-entrypoint-initdb.d
     networks:
-      - ministry-communication-network
+      - ministry-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ministry_communication"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+
+  # Redis for Session Storage and Caching
+  redis:
+    image: redis:7-alpine
+    container_name: ${CONTAINER_PREFIX:-moct}-redis
+    restart: ${RESTART_POLICY:-unless-stopped}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - ministry-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+
+  # Nginx Reverse Proxy (Production only)
+  nginx:
+    image: nginx:alpine
+    container_name: ${CONTAINER_PREFIX:-moct}-nginx
+    restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx-secure-latest.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - secure_uploads:/var/secure-uploads:ro
+      - app_uploads:/app/uploads:ro
+    depends_on:
+      - app
+    networks:
+      - ministry-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - production
+      - full
+
+  # Database Backup Service (Production only)
+  db-backup:
+    image: postgres:16-alpine
+    container_name: ${CONTAINER_PREFIX:-moct}-backup
+    restart: ${RESTART_POLICY:-unless-stopped}
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=ministry_communication
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+      - TZ=Asia/Damascus
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts:ro
+    networks:
+      - ministry-network
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '${BACKUP_SCHEDULE:-0 2 * * *} /scripts/backup.sh' > /var/spool/cron/crontabs/root &&
+        chmod 0644 /var/spool/cron/crontabs/root &&
+        crond -f -d 8
+      "
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - production
+      - full
+
+  # Log Aggregation (Production only)
+  log-aggregator:
+    image: fluent/fluent-bit:latest
+    container_name: ${CONTAINER_PREFIX:-moct}-logs
+    restart: ${RESTART_POLICY:-unless-stopped}
+    volumes:
+      - app_logs:/app/logs:ro
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+    networks:
+      - ministry-network
+    depends_on:
+      - app
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - production
+      - full
+
+  # Security Monitor (Production only)
+  security-monitor:
+    image: node:20-alpine
+    container_name: ${CONTAINER_PREFIX:-moct}-security
+    restart: ${RESTART_POLICY:-unless-stopped}
+    working_dir: /app
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/ministry_communication
+      - TZ=Asia/Damascus
+    volumes:
+      - ./server/security-monitor.js:/app/security-monitor.js:ro
+      - app_logs:/app/logs
+    networks:
+      - ministry-network
+    depends_on:
+      db:
+        condition: service_healthy
+    command: node security-monitor.js
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - production
+      - full
+
+  # Mail Server (Optional - Development/Testing)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ${CONTAINER_PREFIX:-moct}-mailhog
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_WEB_PORT:-8025}:8025"
+    restart: ${RESTART_POLICY:-unless-stopped}
+    profiles:
+      - development
+      - mail
+
+  # Production Mail Server (Optional)
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    container_name: ${CONTAINER_PREFIX:-moct}-mailserver
+    hostname: ${MAIL_HOSTNAME:-mail.moct-platform.local}
+    env_file: mail.env
+    ports:
+      - "25:25"
+      - "587:587"
+      - "465:465"
+      - "993:993"
+    volumes:
+      - ./mail-data/:/var/mail/
+      - ./mail-config/:/tmp/docker-mailserver/
+      - /etc/localtime:/etc/localtime:ro
+    restart: ${RESTART_POLICY:-unless-stopped}
+    stop_grace_period: 1m
+    healthcheck:
+      test: "ss -lntp | grep -E ':25|:587|:465|:993' || exit 1"
+      timeout: 45s
+      interval: 30s
+      retries: 3
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - ENABLE_RSPAMD=1
+      - ENABLE_CLAMAV=1
+      - ENABLE_FAIL2BAN=1
+      - ENABLE_POSTGREY=1
+      - ENABLE_MANAGESIEVE=1
+      - SSL_TYPE=self-signed
+      - PERMIT_DOCKER=host
+      - ONE_DIR=1
+      - ENABLE_SPAMASSASSIN=1
+      - SPAMASSASSIN_SPAM_TO_INBOX=1
+      - OVERRIDE_HOSTNAME=${MAIL_HOSTNAME:-mail.moct-platform.local}
+    profiles:
+      - mail
+      - production
 
 networks:
-  ministry-communication-network:
+  ministry-network:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+    driver_opts:
+      com.docker.network.bridge.name: moct-bridge
 
 volumes:
   postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/opt/moct-data}/postgres
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/opt/moct-data}/redis
+  app_uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/opt/moct-data}/uploads
+  secure_uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/opt/moct-data}/secure-uploads
+  app_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/opt/moct-data}/logs

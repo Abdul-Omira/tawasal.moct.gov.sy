@@ -1212,6 +1212,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Health check endpoint
+  app.get("/api/health", async (req: Request, res: Response) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  // Assignment and Comments API Routes
+  app.get("/api/admin/users", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const users = await storage.getUsers();
+      res.json({ success: true, data: users });
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ success: false, message: "خطأ في جلب قائمة المستخدمين" });
+    }
+  });
+
+  app.post("/api/admin/assign-communication", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { communicationId, assignedTo, customUserName } = req.body;
+      const userId = (req as any).user?.id;
+
+      if (!communicationId || !userId) {
+        return res.status(400).json({ success: false, message: "معاملات مطلوبة مفقودة" });
+      }
+
+      if (!assignedTo && !customUserName) {
+        return res.status(400).json({ success: false, message: "يجب تحديد مستخدم أو اسم مخصص" });
+      }
+
+      await storage.assignCommunication(communicationId, assignedTo, userId, customUserName);
+      res.json({ success: true, message: "تم تعيين الطلب بنجاح" });
+    } catch (error) {
+      console.error('Error assigning communication:', error);
+      res.status(500).json({ success: false, message: "خطأ في تعيين الطلب" });
+    }
+  });
+
+  app.post("/api/admin/unassign-communication", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { communicationId } = req.body;
+
+      if (!communicationId) {
+        return res.status(400).json({ success: false, message: "معرف الطلب مطلوب" });
+      }
+
+      await storage.unassignCommunication(communicationId);
+      res.json({ success: true, message: "تم إلغاء تعيين الطلب بنجاح" });
+    } catch (error) {
+      console.error('Error unassigning communication:', error);
+      res.status(500).json({ success: false, message: "خطأ في إلغاء تعيين الطلب" });
+    }
+  });
+
+  app.post("/api/admin/add-comment", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { communicationId, comment } = req.body;
+      const userId = (req as any).user?.id;
+
+      if (!communicationId || !comment || !userId) {
+        return res.status(400).json({ success: false, message: "معاملات مطلوبة مفقودة" });
+      }
+
+      await storage.addComment(communicationId, userId, comment);
+      res.json({ success: true, message: "تم إضافة التعليق بنجاح" });
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      res.status(500).json({ success: false, message: "خطأ في إضافة التعليق" });
+    }
+  });
+
+  app.get("/api/admin/communication-comments/:id", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const communicationId = parseInt(req.params.id);
+      const comments = await storage.getComments(communicationId);
+      res.json({ success: true, data: comments });
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ success: false, message: "خطأ في جلب التعليقات" });
+    }
+  });
+
+  app.post("/api/admin/change-status", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { communicationId, newStatus, comment } = req.body;
+      const userId = (req as any).user?.id;
+
+      if (!communicationId || !newStatus || !userId) {
+        return res.status(400).json({ success: false, message: "معاملات مطلوبة مفقودة" });
+      }
+
+      await storage.changeCommunicationStatus(communicationId, userId, newStatus, comment);
+      res.json({ success: true, message: "تم تغيير حالة الطلب بنجاح" });
+    } catch (error) {
+      console.error('Error changing status:', error);
+      res.status(500).json({ success: false, message: "خطأ في تغيير حالة الطلب" });
+    }
+  });
+
+  app.get("/api/admin/communication-details/:id", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const communicationId = parseInt(req.params.id);
+      const communication = await storage.getCommunicationWithAssignment(communicationId);
+      
+      if (!communication) {
+        return res.status(404).json({ success: false, message: "الطلب غير موجود" });
+      }
+
+      res.json({ success: true, data: communication });
+    } catch (error) {
+      console.error('Error fetching communication details:', error);
+      res.status(500).json({ success: false, message: "خطأ في جلب تفاصيل الطلب" });
+    }
+  });
+
+  app.get("/api/admin/communication-status-history/:id", adminLimiter, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const communicationId = parseInt(req.params.id);
+      const history = await storage.getCommunicationStatusHistory(communicationId);
+      res.json({ success: true, data: history });
+    } catch (error) {
+      console.error('Error fetching status history:', error);
+      res.status(500).json({ success: false, message: "خطأ في جلب تاريخ الحالة" });
+    }
+  });
+
   // 🚨 ADDITIONAL SECURITY MEASURES 🚨
   
   // Block known attack tools and bots before any processing
