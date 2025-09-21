@@ -6,6 +6,51 @@ This constitution establishes the fundamental principles, standards, and guideli
 
 ---
 
+## 🏗️ **Current Project Architecture**
+
+### **Technology Stack**
+- **Frontend**: React 18.3.1 + TypeScript 5.6.3 + Vite 7.0.2
+- **Backend**: Node.js + Express + TypeScript + ESBuild
+- **Database**: PostgreSQL 16 + Drizzle ORM
+- **Styling**: Tailwind CSS + Radix UI components
+- **Animation**: Framer Motion
+- **State Management**: React Query (TanStack Query)
+- **Routing**: Wouter (lightweight React router)
+- **Build Tools**: Vite (client), ESBuild (server)
+- **Deployment**: Docker + Docker Compose
+
+### **Project Structure**
+```
+tawasal.moct.gov.sy/
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/         # Page components
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── lib/           # Utilities and configurations
+│   │   └── types/         # TypeScript type definitions
+├── server/                # Express backend
+│   ├── middleware/        # Express middleware
+│   ├── security/          # Security implementations
+│   ├── database/          # Database layer
+│   └── email/             # Email services
+├── shared/                # Shared types and schemas
+├── migrations/            # Database migrations
+└── docker-compose.yml     # Docker configuration
+```
+
+### **Key Features Implemented**
+- **Citizen Communication Forms**: Multi-step forms with validation
+- **Admin Dashboard**: Management interface for communications
+- **Authentication**: JWT-based authentication system
+- **File Upload**: Secure file upload with validation
+- **Email Integration**: Automated email notifications
+- **RTL Support**: Full Arabic language support
+- **Responsive Design**: Mobile-first responsive layout
+- **Security**: Comprehensive security measures and rate limiting
+
+---
+
 ## 🎯 **Core Principles**
 
 ### 1. **Code Quality First**
@@ -80,10 +125,11 @@ describe('CitizenCommunicationService', () => {
 - **Accessibility Testing**: Automated accessibility testing
 
 ### **Testing Tools & Frameworks**
-- **Frontend**: Jest, React Testing Library, Playwright
-- **Backend**: Jest, Supertest, Testcontainers
-- **E2E**: Playwright, Cypress
+- **Frontend**: Jest, React Testing Library, Playwright (planned)
+- **Backend**: Jest, Supertest, Testcontainers (planned)
+- **E2E**: Playwright, Cypress (planned)
 - **Performance**: Lighthouse, WebPageTest
+- **Current Status**: Testing framework setup in progress (see package.json test script)
 
 ---
 
@@ -98,35 +144,48 @@ describe('CitizenCommunicationService', () => {
 ### **UI/UX Guidelines**
 
 #### **Typography**
-- **Arabic Font**: ITF Qomra Arabic (Regular, Light, Bold)
-- **English Font**: Adobe Arabic Regular
-- **Hierarchy**: Clear heading structure (H1-H6)
+- **Primary Font**: ITF Qomra Arabic (Light 300, Regular 400, Bold 700)
+- **Secondary Font**: Adobe Arabic Regular
+- **Fallback**: System fonts (system-ui, -apple-system, BlinkMacSystemFont)
+- **Hierarchy**: Clear heading structure (H1-H6) with font-weight: 700
 - **Readability**: Minimum 16px font size for body text
+- **RTL Support**: Right-to-left text direction with proper alignment
 
-#### **Color Palette**
+#### **Syrian Ministry Color Palette**
 ```css
-/* Primary Colors */
---primary-blue: #1e40af;
---primary-gold: #f59e0b;
---primary-green: #059669;
+/* Primary Green Colors (الأخضر) */
+--color-green-500: #00594f;    /* Main brand green */
+--color-green-600: #004d42;    /* Secondary green */
+--color-green-700: #003d34;    /* Dark green */
 
-/* Neutral Colors */
---gray-50: #f9fafb;
---gray-900: #111827;
---white: #ffffff;
+/* Gold Colors (الذهبي) */
+--color-gold-500: #e3ddd2;     /* Light gold */
+--color-gold-600: #d9c89e;     /* Main gold */
+--color-gold-700: #ad9e6e;     /* Dark gold */
+
+/* Maroon Colors (المارون) */
+--color-maroon-700: #7a2631;   /* Main maroon */
+--color-maroon-800: #94164a;   /* Dark maroon */
+--color-maroon-900: #7a2631;   /* Darkest maroon */
+
+/* Gray/Black Colors (الأسود) */
+--color-gray-800: #4d4d4d;     /* Medium gray */
+--color-gray-900: #302e2f;     /* Dark gray/black */
 
 /* Semantic Colors */
---success: #059669;
---warning: #d97706;
---error: #dc2626;
---info: #2563eb;
+--primary: #00594f;            /* Main green */
+--secondary: #d9c89e;          /* Main gold */
+--accent: #7a2631;             /* Main maroon */
+--background: #ffffff;         /* White background */
+--foreground: #302e2f;         /* Dark text */
 ```
 
 #### **Spacing & Layout**
-- **Grid System**: 12-column responsive grid
-- **Spacing Scale**: 4px, 8px, 16px, 24px, 32px, 48px, 64px
-- **Container Max Width**: 1200px
-- **Breakpoints**: Mobile (320px), Tablet (768px), Desktop (1024px+)
+- **Grid System**: Tailwind CSS responsive grid system
+- **Spacing Scale**: Tailwind default scale (0.25rem, 0.5rem, 1rem, 1.5rem, 2rem, 3rem, 4rem)
+- **Container Max Width**: Default Tailwind container max-width
+- **Breakpoints**: Mobile (sm: 640px), Tablet (md: 768px), Desktop (lg: 1024px, xl: 1280px)
+- **RTL Layout**: Right-to-left layout with proper text alignment and spacing
 
 ### **Accessibility Requirements**
 - **Keyboard Navigation**: All interactive elements must be keyboard accessible
@@ -142,18 +201,22 @@ describe('CitizenCommunicationService', () => {
   - CLS (Cumulative Layout Shift): < 0.1
 - **Page Load Time**: < 3 seconds on 3G connection
 - **Time to Interactive**: < 5 seconds
-- **Bundle Size**: < 500KB initial JavaScript bundle
+- **Bundle Size**: < 500KB initial JavaScript bundle (current: ~1.2MB, optimization needed)
+- **Build Performance**: Vite build time < 10 seconds
+- **HMR Performance**: Hot module replacement < 1 second
 
 ---
 
 ## ⚡ **Performance Requirements**
 
 ### **Frontend Performance**
-- **Code Splitting**: Implement route-based and component-based code splitting
-- **Lazy Loading**: Lazy load images, components, and non-critical resources
+- **Code Splitting**: Implement route-based and component-based code splitting (planned)
+- **Lazy Loading**: Lazy load images, components, and non-critical resources (planned)
 - **Caching**: Implement proper HTTP caching headers
 - **Compression**: Enable gzip/brotli compression
 - **CDN**: Use CDN for static assets
+- **Current Implementation**: Vite with React, Framer Motion animations, Tailwind CSS
+- **Bundle Analysis**: Current bundle size needs optimization (see build warnings)
 
 ### **Backend Performance**
 - **Database Optimization**: Proper indexing and query optimization
@@ -178,6 +241,8 @@ describe('CitizenCommunicationService', () => {
 - **Type Safety**: No `any` types without explicit justification
 - **Interface Design**: Prefer interfaces over types for object shapes
 - **Generic Usage**: Use generics for reusable components and functions
+- **Current Configuration**: TypeScript 5.6.3 with strict mode enabled
+- **Build Process**: ESBuild for server bundling, Vite for client bundling
 
 ```typescript
 // ✅ Good TypeScript Example
@@ -202,6 +267,9 @@ class CommunicationService {
 - **Props Interface**: Define clear prop interfaces
 - **State Management**: Use appropriate state management (local, context, or external)
 - **Error Boundaries**: Implement error boundaries for graceful error handling
+- **Current Implementation**: React 18.3.1 with hooks, React Query for data fetching
+- **UI Library**: Radix UI components with custom styling via Tailwind CSS
+- **Animation**: Framer Motion for smooth animations and transitions
 
 ```typescript
 // ✅ Good React Component Example
@@ -260,6 +328,8 @@ interface ApiResponse<T> {
 - **Migrations**: Version-controlled database migrations
 - **Constraints**: Appropriate foreign key and check constraints
 - **Backup**: Regular automated backups
+- **Current Implementation**: PostgreSQL 16 with Drizzle ORM
+- **Schema Management**: Drizzle Kit for migrations and schema management
 
 ---
 
