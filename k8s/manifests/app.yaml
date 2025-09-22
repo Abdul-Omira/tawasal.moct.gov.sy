@@ -1,0 +1,176 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ministry-platform-app
+  namespace: ministry-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ministry-platform-app
+  template:
+    metadata:
+      labels:
+        app: ministry-platform-app
+    spec:
+      containers:
+      - name: app
+        image: ministry-platform:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: NODE_ENV
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: PORT
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: TZ
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: REDIS_URL
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ministry-platform-secrets
+              key: SESSION_SECRET
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ministry-platform-secrets
+              key: JWT_SECRET
+        - name: FILE_ACCESS_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ministry-platform-secrets
+              key: FILE_ACCESS_SECRET
+        - name: ADMIN_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: ADMIN_USERNAME
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ministry-platform-secrets
+              key: ADMIN_PASSWORD
+        - name: ADMIN_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: ADMIN_NAME
+        - name: EMPLOYEE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: EMPLOYEE_USERNAME
+        - name: EMPLOYEE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ministry-platform-secrets
+              key: EMPLOYEE_PASSWORD
+        - name: EMPLOYEE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: ministry-platform-config
+              key: EMPLOYEE_NAME
+        volumeMounts:
+        - name: app-uploads
+          mountPath: /app/uploads
+        - name: app-logs
+          mountPath: /app/logs
+        - name: secure-uploads
+          mountPath: /var/secure-uploads
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: app-uploads
+        persistentVolumeClaim:
+          claimName: app-uploads-pvc
+      - name: app-logs
+        persistentVolumeClaim:
+          claimName: app-logs-pvc
+      - name: secure-uploads
+        persistentVolumeClaim:
+          claimName: secure-uploads-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ministry-platform-service
+  namespace: ministry-platform
+spec:
+  selector:
+    app: ministry-platform-app
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-uploads-pvc
+  namespace: ministry-platform
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-logs-pvc
+  namespace: ministry-platform
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: secure-uploads-pvc
+  namespace: ministry-platform
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

@@ -1,0 +1,35 @@
+apiVersion: v2
+name: ministry-platform
+description: A Helm chart for the Syrian Ministry of Communications Platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ministry
+  - communications
+  - platform
+  - forms
+  - government
+home: https://github.com/Abdul-Omira/tawasal.moct.gov.sy
+sources:
+  - https://github.com/Abdul-Omira/tawasal.moct.gov.sy
+maintainers:
+  - name: Ministry Platform Team
+    email: admin@moct.gov.sy
+dependencies:
+  - name: postgresql
+    version: 12.1.2
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: 17.3.7
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: prometheus
+    version: 19.6.1
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: monitoring.prometheus.enabled
+  - name: grafana
+    version: 6.50.7
+    repository: https://grafana.github.io/helm-charts
+    condition: monitoring.grafana.enabled

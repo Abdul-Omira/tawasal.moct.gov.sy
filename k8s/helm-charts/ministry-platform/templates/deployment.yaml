@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ministry-platform.fullname" . }}
+  labels:
+    {{- include "ministry-platform.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ministry-platform.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ministry-platform.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ministry-platform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: DATABASE_URL
+              value: "postgres://postgres:$(DB_PASSWORD)@{{ include "ministry-platform.fullname" . }}-postgresql:5432/{{ .Values.postgresql.auth.database }}"
+            - name: REDIS_URL
+              value: "redis://:$(REDIS_PASSWORD)@{{ include "ministry-platform.fullname" . }}-redis-master:6379"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ministry-platform.fullname" . }}-secrets
+                  key: DB_PASSWORD
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ministry-platform.fullname" . }}-secrets
+                  key: REDIS_PASSWORD
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ministry-platform.fullname" . }}-secrets
+                  key: SESSION_SECRET
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ministry-platform.fullname" . }}-secrets
+                  key: JWT_SECRET
+            - name: FILE_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ministry-platform.fullname" . }}-secrets
+                  key: FILE_ACCESS_SECRET
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ministry-platform.fullname" . }}-secrets
+                  key: ADMIN_PASSWORD
+            - name: EMPLOYEE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ministry-platform.fullname" . }}-secrets
+                  key: EMPLOYEE_PASSWORD
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: app-uploads
+              mountPath: /app/uploads
+            - name: app-logs
+              mountPath: /app/logs
+            - name: secure-uploads
+              mountPath: /var/secure-uploads
+      volumes:
+        - name: app-uploads
+          persistentVolumeClaim:
+            claimName: {{ include "ministry-platform.fullname" . }}-uploads
+        - name: app-logs
+          persistentVolumeClaim:
+            claimName: {{ include "ministry-platform.fullname" . }}-logs
+        - name: secure-uploads
+          persistentVolumeClaim:
+            claimName: {{ include "ministry-platform.fullname" . }}-secure-uploads
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

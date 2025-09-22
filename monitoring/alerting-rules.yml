@@ -1,0 +1,229 @@
+groups:
+  - name: ministry-platform-alerts
+    rules:
+      # Application Health Alerts
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }}% for the last 5 minutes"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 2m
+        labels:
+          severity: warning
+          service: application
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s"
+
+      - alert: HighRequestRate
+        expr: rate(http_requests_total[5m]) > 1000
+        for: 2m
+        labels:
+          severity: warning
+          service: application
+        annotations:
+          summary: "High request rate detected"
+          description: "Request rate is {{ $value }} requests/sec"
+
+      # Database Alerts
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_database_numbackends > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High database connection count"
+          description: "Database has {{ $value }} active connections"
+
+      - alert: DatabaseConnectionsCritical
+        expr: pg_stat_database_numbackends > 90
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Critical database connection count"
+          description: "Database has {{ $value }} active connections"
+
+      - alert: DatabaseCacheHitRatioLow
+        expr: pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read) * 100 < 80
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Low database cache hit ratio"
+          description: "Cache hit ratio is {{ $value }}%"
+
+      - alert: DatabaseSizeHigh
+        expr: pg_database_size_bytes > 10000000000  # 10GB
+        for: 1m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Database size is high"
+          description: "Database size is {{ $value | humanize1024 }}B"
+
+      # Redis Alerts
+      - alert: RedisMemoryUsageHigh
+        expr: redis_memory_used_bytes > 2000000000  # 2GB
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is {{ $value | humanize1024 }}B"
+
+      - alert: RedisMemoryUsageCritical
+        expr: redis_memory_used_bytes > 3000000000  # 3GB
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Critical Redis memory usage"
+          description: "Redis memory usage is {{ $value | humanize1024 }}B"
+
+      - alert: RedisConnectedClientsHigh
+        expr: redis_connected_clients > 200
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis client count"
+          description: "Redis has {{ $value }} connected clients"
+
+      - alert: RedisHitRateLow
+        expr: redis_keyspace_hits / (redis_keyspace_hits + redis_keyspace_misses) * 100 < 80
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Low Redis hit rate"
+          description: "Redis hit rate is {{ $value }}%"
+
+      # System Resource Alerts
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}%"
+
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk usage is {{ $value }}%"
+
+      # Application Specific Alerts
+      - alert: FormSubmissionFailure
+        expr: rate(form_submissions_failed_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: forms
+        annotations:
+          summary: "High form submission failure rate"
+          description: "Form submission failures: {{ $value }} per second"
+
+      - alert: AuthenticationFailure
+        expr: rate(auth_failures_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: auth
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication failures: {{ $value }} per second"
+
+      - alert: MFAFailure
+        expr: rate(mfa_failures_total[5m]) > 3
+        for: 2m
+        labels:
+          severity: warning
+          service: auth
+        annotations:
+          summary: "High MFA failure rate"
+          description: "MFA failures: {{ $value }} per second"
+
+      # Security Alerts
+      - alert: SuspiciousActivity
+        expr: rate(suspicious_activity_total[5m]) > 1
+        for: 1m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "Suspicious activity rate: {{ $value }} per second"
+
+      - alert: BruteForceAttack
+        expr: rate(auth_failures_total[5m]) > 20
+        for: 1m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Potential brute force attack"
+          description: "High authentication failure rate: {{ $value }} per second"
+
+      # Service Availability Alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: application
+        annotations:
+          summary: "Service is down"
+          description: "Service {{ $labels.instance }} is down"
+
+      - alert: DatabaseDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Database is down"
+          description: "PostgreSQL database is down"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is down"

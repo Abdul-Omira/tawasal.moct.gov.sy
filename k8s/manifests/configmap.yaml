@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ministry-platform-config
+  namespace: ministry-platform
+data:
+  NODE_ENV: "production"
+  PORT: "5000"
+  TZ: "Asia/Damascus"
+  # Database Configuration
+  DATABASE_URL: "postgres://postgres:$(DB_PASSWORD)@postgres-service:5432/ministry_communication"
+  # Redis Configuration
+  REDIS_URL: "redis://redis-service:6379"
+  # Security Configuration
+  SESSION_SECRET: "$(SESSION_SECRET)"
+  JWT_SECRET: "$(JWT_SECRET)"
+  FILE_ACCESS_SECRET: "$(FILE_ACCESS_SECRET)"
+  # Admin Configuration
+  ADMIN_USERNAME: "admin"
+  ADMIN_NAME: "مدير النظام"
+  # Employee Configuration
+  EMPLOYEE_USERNAME: "employee"
+  EMPLOYEE_NAME: "موظف من"
+  # Monitoring Configuration
+  PROMETHEUS_URL: "http://prometheus-service:9090"
+  GRAFANA_URL: "http://grafana-service:3000"
+  # Backup Configuration
+  BACKUP_SCHEDULE: "0 2 * * *"
+  # Mail Configuration
+  MAIL_HOSTNAME: "mail.moct-platform.local"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ministry-platform-secrets
+  namespace: ministry-platform
+type: Opaque
+data:
+  # Base64 encoded secrets - these should be replaced with actual values
+  DB_PASSWORD: "" # base64 encoded password
+  REDIS_PASSWORD: "" # base64 encoded password
+  SESSION_SECRET: "" # base64 encoded secret
+  JWT_SECRET: "" # base64 encoded secret
+  FILE_ACCESS_SECRET: "" # base64 encoded secret
+  ADMIN_PASSWORD: "" # base64 encoded password
+  EMPLOYEE_PASSWORD: "" # base64 encoded password
+  GRAFANA_PASSWORD: "" # base64 encoded password
