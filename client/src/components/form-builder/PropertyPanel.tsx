@@ -6,6 +6,10 @@
 import React, { useState } from 'react';
 import { BaseComponent, ComponentType } from '../../types/component';
 import { cn } from '../../lib/utils';
+import { StylingEditor } from './StylingEditor';
+import { ResponsiveControls } from './ResponsiveControls';
+import { ConditionalLogicBuilder } from './ConditionalLogicBuilder';
+import { ConditionalLogicTester } from './ConditionalLogicTester';
 import {
   PencilIcon,
   TrashIcon,
@@ -14,26 +18,39 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XMarkIcon,
+  PaintBrushIcon,
+  DevicePhoneMobileIcon,
 } from '@heroicons/react/24/outline';
 
 interface PropertyPanelProps {
   selectedComponent: BaseComponent | null;
+  components: BaseComponent[];
   onConfigChange: (config: any) => void;
   onValidationChange: (validation: any) => void;
   onConditionalLogicChange: (logic: any) => void;
   onComponentDelete: (componentId: string) => void;
   onComponentToggleVisibility: (componentId: string) => void;
+  onComponentStyleUpdate: (componentId: string, updates: Partial<BaseComponent['style']>) => void;
+  form?: any;
+  onFormStyleUpdate?: (updates: any) => void;
 }
 
 export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   selectedComponent,
+  components,
   onConfigChange,
   onValidationChange,
   onConditionalLogicChange,
   onComponentDelete,
   onComponentToggleVisibility,
+  onComponentStyleUpdate,
+  form,
+  onFormStyleUpdate,
 }) => {
-  const [activeTab, setActiveTab] = useState<'config' | 'validation' | 'logic'>('config');
+  const [activeTab, setActiveTab] = useState<'config' | 'validation' | 'logic' | 'style' | 'responsive'>('config');
+  const [showStylingEditor, setShowStylingEditor] = useState(false);
+  const [showConditionalLogicBuilder, setShowConditionalLogicBuilder] = useState(false);
+  const [showConditionalLogicTester, setShowConditionalLogicTester] = useState(false);
 
   if (!selectedComponent) {
     return (
@@ -55,6 +72,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
     { id: 'config', name: 'الخصائص', icon: PencilIcon },
     { id: 'validation', name: 'التحقق', icon: CheckCircleIcon },
     { id: 'logic', name: 'المنطق', icon: ExclamationTriangleIcon },
+    { id: 'style', name: 'التصميم', icon: PaintBrushIcon },
+    { id: 'responsive', name: 'الاستجابة', icon: DevicePhoneMobileIcon },
   ];
 
   return (
@@ -132,12 +151,108 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
           />
         )}
         {activeTab === 'logic' && (
-          <LogicTab
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                المنطق الشرطي
+              </h4>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <button
+                  onClick={() => setShowConditionalLogicTester(true)}
+                  className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  اختبار
+                </button>
+                <button
+                  onClick={() => setShowConditionalLogicBuilder(true)}
+                  className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  محرر متقدم
+                </button>
+              </div>
+            </div>
+            <LogicTab
+              component={selectedComponent}
+              onConditionalLogicChange={onConditionalLogicChange}
+            />
+          </div>
+        )}
+        {activeTab === 'style' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                تصميم المكون
+              </h4>
+              <button
+                onClick={() => setShowStylingEditor(true)}
+                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                محرر متقدم
+              </button>
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              استخدم المحرر المتقدم لتخصيص التصميم بالكامل
+            </div>
+          </div>
+        )}
+        {activeTab === 'responsive' && (
+          <ResponsiveControls
             component={selectedComponent}
-            onConditionalLogicChange={onConditionalLogicChange}
+            onStyleUpdate={(updates) => onComponentStyleUpdate(selectedComponent.id, updates)}
           />
         )}
       </div>
+
+      {/* Styling Editor Modal */}
+      {showStylingEditor && (
+        <StylingEditor
+          form={form}
+          selectedComponent={selectedComponent}
+          onFormStyleUpdate={onFormStyleUpdate || (() => {})}
+          onComponentStyleUpdate={onComponentStyleUpdate}
+          onClose={() => setShowStylingEditor(false)}
+        />
+      )}
+
+      {/* Conditional Logic Builder Modal */}
+      {showConditionalLogicBuilder && (
+        <ConditionalLogicBuilder
+          components={components}
+          conditionalLogic={selectedComponent?.conditionalLogic || null}
+          onConditionalLogicChange={(logic) => selectedComponent && onConditionalLogicChange(logic)}
+          onClose={() => setShowConditionalLogicBuilder(false)}
+        />
+      )}
+
+      {/* Conditional Logic Tester Modal */}
+      {showConditionalLogicTester && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowConditionalLogicTester(false)}
+          />
+          <div className="absolute right-0 top-0 h-full w-1/2 bg-white dark:bg-gray-900 shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                اختبار المنطق الشرطي
+              </h3>
+              <button
+                onClick={() => setShowConditionalLogicTester(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4">
+              <ConditionalLogicTester
+                components={components}
+                conditionalLogic={selectedComponent?.conditionalLogic || null}
+                onTestResults={() => {}}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

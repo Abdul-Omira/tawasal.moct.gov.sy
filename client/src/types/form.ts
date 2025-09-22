@@ -77,7 +77,8 @@ export type ComponentType =
   | 'nps'
   | 'page-break'
   | 'section-header'
-  | 'conditional-logic';
+  | 'conditional-logic'
+  | 'step';
 
 export type FormStatus = 'draft' | 'published' | 'archived';
 
@@ -187,6 +188,13 @@ export interface SectionHeaderConfig {
   styling?: ComponentStyling;
 }
 
+export interface StepConfig {
+  title: string;
+  description?: string;
+  isRequired: boolean;
+  styling?: ComponentStyling;
+}
+
 // Union type for all component configs
 export type ComponentConfig = 
   | TextInputConfig
@@ -200,7 +208,8 @@ export type ComponentConfig =
   | DatePickerConfig
   | RatingConfig
   | PageBreakConfig
-  | SectionHeaderConfig;
+  | SectionHeaderConfig
+  | StepConfig;
 
 // Supporting interfaces
 export interface Option {

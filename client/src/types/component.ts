@@ -15,6 +15,39 @@ export interface BaseComponent {
   orderIndex: number;
   isVisible: boolean;
   isRequired: boolean;
+  style?: ComponentStyle;
+}
+
+// Component style interface
+export interface ComponentStyle {
+  theme?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+    backgroundColor?: string;
+    textColor?: string;
+  };
+  layout?: {
+    width?: string;
+    height?: string;
+    padding?: string;
+    margin?: string;
+    border?: string;
+    borderRadius?: string;
+    boxShadow?: string;
+    position?: string;
+  };
+  typography?: {
+    fontFamily?: string;
+    fontSize?: string;
+    fontWeight?: string;
+    lineHeight?: string;
+    letterSpacing?: string;
+  };
+  responsive?: {
+    mobile?: Partial<ComponentStyle>;
+    tablet?: Partial<ComponentStyle>;
+    desktop?: Partial<ComponentStyle>;
+  };
 }
 
 // Component registry interface
