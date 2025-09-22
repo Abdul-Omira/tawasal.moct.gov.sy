@@ -528,7 +528,7 @@ const Admin: React.FC = () => {
           </div>
           
           <Tabs defaultValue="submissions" className="bg-white rounded-lg shadow-md">
-            <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-white">
+            <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-white">
               <TabsTrigger value="submissions" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                 <FilePlusIcon className="ml-2 h-4 w-4" />
                 رسائل المواطنين
@@ -536,6 +536,14 @@ const Admin: React.FC = () => {
               <TabsTrigger value="statistics" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                 <BarChart4Icon className="ml-2 h-4 w-4" />
                 الإحصائيات المتقدمة
+              </TabsTrigger>
+              <TabsTrigger value="forms" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <FileTextIcon className="ml-2 h-4 w-4" />
+                Form Builder
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <TrendingUpIcon className="ml-2 h-4 w-4" />
+                Analytics
               </TabsTrigger>
               <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                 <SettingsIcon className="ml-2 h-4 w-4" />
@@ -1282,6 +1290,170 @@ const Admin: React.FC = () => {
 
                 {/* Email Testing Section */}
                 <EmailTestSection />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="forms" className="p-6">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-foreground">Form Builder</h3>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <FileTextIcon className="ml-2 h-4 w-4" />
+                    Create New Form
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent className="p-6 text-center">
+                      <FileTextIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                      <h4 className="text-lg font-semibold mb-2">Citizen Communication Form</h4>
+                      <p className="text-gray-600 text-sm mb-4">Main form for citizen communications</p>
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>Active</span>
+                        <span>1,234 submissions</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent className="p-6 text-center">
+                      <FileTextIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                      <h4 className="text-lg font-semibold mb-2">Feedback Collection</h4>
+                      <p className="text-gray-600 text-sm mb-4">Collect feedback on services</p>
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>Draft</span>
+                        <span>0 submissions</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent className="p-6 text-center">
+                      <FileTextIcon className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                      <h4 className="text-lg font-semibold mb-2">Service Request</h4>
+                      <p className="text-gray-600 text-sm mb-4">Handle service requests</p>
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>Published</span>
+                        <span>567 submissions</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="p-6">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-foreground">Analytics Dashboard</h3>
+                  <div className="flex gap-2">
+                    <Button variant="outline">
+                      <DownloadIcon className="ml-2 h-4 w-4" />
+                      Export Report
+                    </Button>
+                    <Button className="bg-purple-600 hover:bg-purple-700">
+                      <TrendingUpIcon className="ml-2 h-4 w-4" />
+                      View Full Analytics
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Total Submissions</p>
+                          <p className="text-2xl font-bold text-gray-900">1,234</p>
+                        </div>
+                        <FileTextIcon className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <TrendingUpIcon className="h-4 w-4 text-green-600 mr-1" />
+                        <span className="text-sm text-green-600">+12% from last month</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Response Rate</p>
+                          <p className="text-2xl font-bold text-gray-900">94%</p>
+                        </div>
+                        <BarChart4Icon className="h-8 w-8 text-green-600" />
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <TrendingUpIcon className="h-4 w-4 text-green-600 mr-1" />
+                        <span className="text-sm text-green-600">+3% from last month</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Avg. Response Time</p>
+                          <p className="text-2xl font-bold text-gray-900">2.4h</p>
+                        </div>
+                        <ClockIcon className="h-8 w-8 text-orange-600" />
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <TrendingUpIcon className="h-4 w-4 text-red-600 mr-1" />
+                        <span className="text-sm text-red-600">+0.2h from last month</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Active Forms</p>
+                          <p className="text-2xl font-bold text-gray-900">8</p>
+                        </div>
+                        <FileTextIcon className="h-8 w-8 text-purple-600" />
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <TrendingUpIcon className="h-4 w-4 text-green-600 mr-1" />
+                        <span className="text-sm text-green-600">+2 this week</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Form Performance</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64 flex items-center justify-center text-gray-500">
+                        <div className="text-center">
+                          <BarChart4Icon className="h-12 w-12 mx-auto mb-4" />
+                          <p>Performance charts will be displayed here</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Submission Trends</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64 flex items-center justify-center text-gray-500">
+                        <div className="text-center">
+                          <TrendingUpIcon className="h-12 w-12 mx-auto mb-4" />
+                          <p>Trend analysis will be shown here</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
           </Tabs>

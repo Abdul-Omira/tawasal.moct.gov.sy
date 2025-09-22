@@ -5,7 +5,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { RTLProvider } from '@/contexts/RTLContext';
-import { TenantProvider } from '@/contexts/TenantContext';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './lib/i18n';
 import Home from '@/pages/Home';
@@ -18,6 +17,11 @@ import NotFound from '@/pages/not-found';
 import { ProtectedRoute } from '@/lib/protected-route';
 import WelcomeScreen from '@/components/animation/WelcomeScreen';
 import { pageMetadata, setPageTitle, updateMetaTags } from '@/lib/seo';
+
+// Enterprise Platform Pages
+import FormBuilder from '@/pages/FormBuilder';
+import Analytics from '@/pages/Analytics';
+import { TenantProvider } from '@/contexts/TenantContext';
 
 function Router() {
   const [location] = useLocation();
@@ -53,8 +57,15 @@ function Router() {
   
   return (
     <Switch>
+      {/* Original Syrian Ministry Form - Main Interface */}
       <Route path="/" component={Home}/>
+      
+      {/* Enterprise Platform - Admin & Management Tools */}
       <ProtectedRoute path="/mgt-system-2024" component={Admin} adminOnly={true} />
+      <ProtectedRoute path="/forms" component={FormBuilder} />
+      <ProtectedRoute path="/analytics" component={Analytics} />
+      
+      {/* Original Pages */}
       <Route path="/confirmation" component={Confirmation}/>
       <Route path="/auth" component={AuthPage}/>
       <Route path="/privacy-policy" component={PrivacyPolicy}/>
