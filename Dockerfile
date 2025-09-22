@@ -3,7 +3,7 @@
 FROM node:20-alpine AS builder
 
 # Install system dependencies for building
-RUN apk add --no-cache python3 make g++ curl
+RUN apk add --no-cache python3 make g++ curl postgresql-client
 
 # Set working directory
 WORKDIR /app
@@ -28,6 +28,8 @@ RUN apk add --no-cache \
     curl \
     tzdata \
     dumb-init \
+    postgresql-client \
+    redis-tools \
     && rm -rf /var/cache/apk/*
 
 # Set timezone to Syria

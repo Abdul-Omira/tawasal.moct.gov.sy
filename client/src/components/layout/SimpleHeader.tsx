@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { SyrianLogoAnimation } from '@/components/animation/SyrianLogoAnimation';
+import LanguageSelector from '@/components/ui/language-selector';
 import headerLogo from '../../assets/headerlogo.png';
 
 const SimpleHeader: React.FC = () => {
@@ -89,6 +90,8 @@ const SimpleHeader: React.FC = () => {
                 لوحة التحكم
               </Link>
             )}
+            
+            <LanguageSelector />
             
             {isAuthenticated && (
               <DropdownMenu>

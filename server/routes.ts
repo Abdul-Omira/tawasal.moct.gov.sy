@@ -15,6 +15,8 @@ import { z } from "zod";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { setupAuth, isAuthenticated, isAdmin } from "./middleware/auth";
+import { tenantResolver, requireTenant, tenantFilter, validateTenantAccess, applyTenantConfig } from "./middleware/tenant";
+import { auditLoggingMiddleware } from "./middleware/auditLogging";
 import { uploadMiddleware, securityScanMiddleware, handleFileUpload, serveFile } from "./fileUpload";
 import { safeServeSecureFile } from "./secure-file-wrapper";
 import { extractRequestMetadata, mergeMetadata, sanitizeMetadata, type SubmissionMetadata } from "./metadataCapture";
@@ -33,6 +35,22 @@ import {
   healthCheck, 
   aiChat 
 } from "./email/aiService";
+import formsRouter from "./routes/forms";
+import mfaRouter from "./routes/mfa";
+import ministriesRouter from "./routes/ministries";
+import rolesRouter from "./routes/roles";
+import encryptionRouter from "./routes/encryption";
+import auditLogsRouter from "./routes/audit-logs";
+import templatesRouter from "./routes/templates";
+import analyticsRouter from "./routes/analytics";
+import reportsRouter from "./routes/reports";
+import performanceRouter from "./routes/performance";
+import securityRouter from "./routes/security";
+import apiGatewayRouter from "./routes/api-gateway";
+import webhooksRouter from "./routes/webhooks";
+import ssoRouter from "./routes/sso";
+import whiteLabelRouter from "./routes/white-label";
+import healthRouter from "./routes/health";
 
 // Helper function to translate status to Arabic
 function getArabicStatus(status: string): string {
@@ -50,6 +68,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set up authentication FIRST - before any routes that use isAdmin middleware
   await setupAuth(app);
+  
+  // Apply tenant middleware to all routes
+  app.use(tenantResolver);
+  app.use(tenantFilter);
+  app.use(applyTenantConfig);
+  
+  // Apply audit logging middleware to all routes
+  app.use(auditLoggingMiddleware());
   
   // 🚨 HONEYPOT SYSTEM - Must be EARLY to catch attacks before legitimate routes 🚨
   const { honeypotHandler } = await import('./security/honeypot');
@@ -1216,6 +1242,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", async (req: Request, res: Response) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
+
+  // Form management routes
+  app.use(formsRouter);
+
+  // MFA routes
+  app.use(mfaRouter);
+
+  // Ministry management routes
+  app.use(ministriesRouter);
+
+  // Role management routes
+  app.use(rolesRouter);
+
+  // Encryption management routes
+  app.use(encryptionRouter);
+
+  // Audit logs routes
+  app.use("/api/audit-logs", auditLogsRouter);
+
+  // Template management routes
+  app.use("/api/templates", templatesRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/reports", reportsRouter);
+app.use("/api/performance", performanceRouter);
+app.use("/api/security", securityRouter);
+app.use("/api/api-gateway", apiGatewayRouter);
+app.use("/api/webhooks", webhooksRouter);
+app.use("/api/sso", ssoRouter);
+app.use("/api/white-label", whiteLabelRouter);
+app.use("/api/health", healthRouter);
 
   // Assignment and Comments API Routes
   app.get("/api/admin/users", adminLimiter, isAdmin, async (req: Request, res: Response) => {

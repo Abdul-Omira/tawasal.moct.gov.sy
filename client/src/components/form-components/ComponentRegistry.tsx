@@ -386,6 +386,22 @@ export const componentRegistry: Record<ComponentType, ComponentDefinition> = {
     configPanel: () => <div>Conditional Logic Config Panel</div>,
     preview: () => <div>Conditional Logic Preview</div>,
   },
+  'step': {
+    type: 'step',
+    name: 'خطوة',
+    description: 'خطوة في النموذج متعدد الخطوات',
+    icon: '👣',
+    category: 'layout',
+    defaultConfig: {
+      title: 'عنوان الخطوة',
+      description: 'وصف الخطوة',
+      isRequired: true,
+    },
+    defaultValidation: {},
+    render: () => <div>Step</div>,
+    configPanel: () => <div>Step Config Panel</div>,
+    preview: () => <div>Step Preview</div>,
+  },
 };
 
 // Get component by type

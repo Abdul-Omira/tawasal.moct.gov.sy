@@ -9,17 +9,30 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ComponentLibrary } from '@/components/form-builder/ComponentLibrary';
 import { FormCanvas } from '@/components/form-builder/FormCanvas';
 import { PropertyPanel } from '@/components/form-builder/PropertyPanel';
-import { Form, Component } from '@/types/form';
+import { TemplateSelector } from '@/components/form-builder/TemplateSelector';
+import { FormExportImport } from '@/components/form-builder/FormExportImport';
+import { VersionManager } from '@/components/form-builder/VersionManager';
+import { RealTimePreview } from '@/components/form-builder/RealTimePreview';
+import PublishingWorkflow from '@/components/form-builder/PublishingWorkflow';
+import { Form } from '@/types/form';
+import { BaseComponent, ComponentCategory } from '@/types/component';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { FileText, Eye, Upload } from 'lucide-react';
 
 export default function FormBuilder() {
   const [selectedForm, setSelectedForm] = useState<Form | null>(null);
-  const [components, setComponents] = useState<Component[]>([]);
-  const [selectedComponent, setSelectedComponent] = useState<Component | null>(null);
+  const [components, setComponents] = useState<BaseComponent[]>([]);
+  const [selectedComponent, setSelectedComponent] = useState<BaseComponent | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<ComponentCategory | 'all'>('all');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showExportImport, setShowExportImport] = useState(false);
+  const [showVersionManager, setShowVersionManager] = useState(false);
+  const [showRealTimePreview, setShowRealTimePreview] = useState(false);
+  const [showPublishingWorkflow, setShowPublishingWorkflow] = useState(false);
 
   // Initialize with a default form
   useEffect(() => {
@@ -28,22 +41,30 @@ export default function FormBuilder() {
       title: 'نموذج جديد',
       description: 'وصف النموذج',
       settings: {
-        theme: 'default',
-        layout: 'single-column',
-        showProgress: true,
-        allowSave: true,
-        requireAuth: false
+        theme: {
+          primaryColor: '#3B82F6',
+          secondaryColor: '#6B7280',
+          backgroundColor: '#FFFFFF',
+          textColor: '#111827',
+          fontFamily: 'Inter'
+        },
+        behavior: {
+          showProgress: true,
+          allowSaveProgress: true,
+          requireLogin: false,
+          allowAnonymous: true
+        }
       },
       status: 'draft',
       createdBy: 'admin-001',
       createdAt: new Date(),
       updatedAt: new Date(),
-      publishedAt: null
+      publishedAt: undefined
     };
     setSelectedForm(defaultForm);
   }, []);
 
-  const handleComponentAdd = (component: Component) => {
+  const handleComponentAdd = (component: BaseComponent) => {
     const newComponent = {
       ...component,
       id: `component-${Date.now()}`,
@@ -53,7 +74,7 @@ export default function FormBuilder() {
     setIsDirty(true);
   };
 
-  const handleComponentUpdate = (id: string, updates: Partial<Component>) => {
+  const handleComponentUpdate = (id: string, updates: Partial<BaseComponent>) => {
     setComponents(prev => 
       prev.map(comp => 
         comp.id === id ? { ...comp, ...updates } : comp
@@ -70,7 +91,7 @@ export default function FormBuilder() {
     setIsDirty(true);
   };
 
-  const handleComponentSelect = (component: Component | null) => {
+  const handleComponentSelect = (component: BaseComponent | null) => {
     setSelectedComponent(component);
   };
 
@@ -105,6 +126,24 @@ export default function FormBuilder() {
     console.log('Publishing form:', selectedForm, components);
   };
 
+  const handleTemplateSelect = (template: any) => {
+    setSelectedForm(template.form);
+    setComponents(template.components);
+    setIsDirty(true);
+  };
+
+  const handleImport = (form: Form, importedComponents: BaseComponent[]) => {
+    setSelectedForm(form);
+    setComponents(importedComponents);
+    setIsDirty(true);
+  };
+
+  const handleVersionSelect = (version: any) => {
+    setSelectedForm(version.form);
+    setComponents(version.components);
+    setIsDirty(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
@@ -116,31 +155,150 @@ export default function FormBuilder() {
           onCategoryChange={setSelectedCategory}
         />
         <div className="flex-1 flex">
-          <FormCanvas
-            form={selectedForm}
-            components={components}
-            selectedComponent={selectedComponent}
-            onComponentAdd={handleComponentAdd}
-            onComponentUpdate={handleComponentUpdate}
-            onComponentDelete={handleComponentDelete}
-            onComponentSelect={handleComponentSelect}
-            onComponentMove={handleComponentMove}
-            onSaveForm={handleSaveForm}
-            onPreviewForm={handlePreviewForm}
-            onPublishForm={handlePublishForm}
-            isPreviewMode={isPreviewMode}
-            isDirty={isDirty}
-          />
+          <div className="flex-1 flex flex-col">
+            <div className="bg-white border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <h1 className="text-2xl font-bold text-gray-900">Form Builder</h1>
+                  {selectedForm && (
+                    <span className="text-sm text-gray-500">
+                      {selectedForm.title || 'Untitled Form'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowTemplateSelector(true)}
+                    className="flex items-center space-x-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Templates</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowExportImport(true)}
+                    className="flex items-center space-x-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Export/Import</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowVersionManager(true)}
+                    className="flex items-center space-x-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Versions</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPublishingWorkflow(true)}
+                    className="flex items-center space-x-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span>Publish Workflow</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowRealTimePreview(true)}
+                    className="flex items-center space-x-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span>Live Preview</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handlePreviewForm}
+                    className="flex items-center space-x-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span>{isPreviewMode ? 'Edit' : 'Preview'}</span>
+                  </Button>
+                  <Button
+                    onClick={handlePublishForm}
+                    className="flex items-center space-x-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span>Publish</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <FormCanvas
+              form={selectedForm}
+              components={components}
+              selectedComponent={selectedComponent}
+              onComponentAdd={handleComponentAdd}
+              onComponentUpdate={handleComponentUpdate}
+              onComponentDelete={handleComponentDelete}
+              onComponentSelect={handleComponentSelect}
+              onComponentMove={handleComponentMove}
+              onSaveForm={handleSaveForm}
+              onPreviewForm={handlePreviewForm}
+              onPublishForm={handlePublishForm}
+              isPreviewMode={isPreviewMode}
+              isDirty={isDirty}
+            />
+          </div>
           <PropertyPanel
             selectedComponent={selectedComponent}
+            components={components}
             onConfigChange={(config) => selectedComponent && handleComponentUpdate(selectedComponent.id, { config })}
             onValidationChange={(validation) => selectedComponent && handleComponentUpdate(selectedComponent.id, { validation })}
             onConditionalLogicChange={(logic) => selectedComponent && handleComponentUpdate(selectedComponent.id, { conditionalLogic: logic })}
             onComponentDelete={handleComponentDelete}
             onComponentToggleVisibility={(id) => handleComponentUpdate(id, { isVisible: !components.find(c => c.id === id)?.isVisible })}
+            onComponentStyleUpdate={(id, style) => handleComponentUpdate(id, { style } as Partial<BaseComponent>)}
+            form={selectedForm}
+            onFormStyleUpdate={(settings) => selectedForm && setSelectedForm({ ...selectedForm, settings })}
           />
         </div>
       </div>
+      
+      {showTemplateSelector && (
+        <TemplateSelector
+          onTemplateSelect={handleTemplateSelect}
+          onClose={() => setShowTemplateSelector(false)}
+        />
+      )}
+      
+      {showExportImport && selectedForm && (
+        <FormExportImport
+          form={selectedForm}
+          components={components}
+          onImport={handleImport}
+          onClose={() => setShowExportImport(false)}
+        />
+      )}
+      
+      {showVersionManager && selectedForm && (
+        <VersionManager
+          form={selectedForm}
+          components={components}
+          onVersionSelect={handleVersionSelect}
+          onClose={() => setShowVersionManager(false)}
+        />
+      )}
+      
+      {showPublishingWorkflow && selectedForm && (
+        <PublishingWorkflow
+          formId={selectedForm.id}
+          formTitle={selectedForm.title}
+          currentStatus="draft"
+          onStatusChange={(status) => console.log('Status changed:', status)}
+          onPublish={() => console.log('Publishing form')}
+          onReject={(reason) => console.log('Rejecting form:', reason)}
+          onApprove={(comments) => console.log('Approving form:', comments)}
+        />
+      )}
+      
+      <RealTimePreview
+        form={selectedForm}
+        components={components}
+        isOpen={showRealTimePreview}
+        onClose={() => setShowRealTimePreview(false)}
+      />
     </div>
   );
 }
