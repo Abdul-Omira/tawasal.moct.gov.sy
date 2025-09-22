@@ -1,0 +1,76 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 30
+      arrivalRate: 5
+    - duration: 60
+      arrivalRate: 10
+    - duration: 60
+      arrivalRate: 20
+    - duration: 60
+      arrivalRate: 50
+    - duration: 60
+      arrivalRate: 100
+    - duration: 30
+      arrivalRate: 5
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: 'Stress Test - Form Operations'
+    weight: 50
+    flow:
+      - post:
+          url: '/api/auth/login'
+          json:
+            username: 'admin'
+            password: 'admin123'
+          capture:
+            - json: '$.token'
+              as: 'authToken'
+      - post:
+          url: '/api/forms'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+          json:
+            title: 'Stress Test Form {{ $randomString() }}'
+            description: 'Generated during stress test'
+            components: []
+            settings:
+              theme: 'default'
+              layout: 'single-column'
+      - get:
+          url: '/api/forms'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+
+  - name: 'Stress Test - Analytics'
+    weight: 30
+    flow:
+      - post:
+          url: '/api/auth/login'
+          json:
+            username: 'admin'
+            password: 'admin123'
+          capture:
+            - json: '$.token'
+              as: 'authToken'
+      - get:
+          url: '/api/analytics/overview'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+      - get:
+          url: '/api/analytics/forms'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+
+  - name: 'Stress Test - Health Checks'
+    weight: 20
+    flow:
+      - get:
+          url: '/api/health'
+      - get:
+          url: '/api/health/db'
+      - get:
+          url: '/api/health/redis'

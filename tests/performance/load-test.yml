@@ -1,0 +1,83 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+    - duration: 120
+      arrivalRate: 20
+    - duration: 60
+      arrivalRate: 10
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: 'Form Creation Load Test'
+    weight: 40
+    flow:
+      - post:
+          url: '/api/auth/login'
+          json:
+            username: 'admin'
+            password: 'admin123'
+          capture:
+            - json: '$.token'
+              as: 'authToken'
+      - post:
+          url: '/api/forms'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+          json:
+            title: 'Load Test Form {{ $randomString() }}'
+            description: 'Generated during load test'
+            components: []
+            settings:
+              theme: 'default'
+              layout: 'single-column'
+
+  - name: 'Form Submission Load Test'
+    weight: 30
+    flow:
+      - post:
+          url: '/api/auth/login'
+          json:
+            username: 'admin'
+            password: 'admin123'
+          capture:
+            - json: '$.token'
+              as: 'authToken'
+      - get:
+          url: '/api/forms'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+          capture:
+            - json: '$.0.id'
+              as: 'formId'
+      - post:
+          url: '/api/forms/{{ formId }}/submit'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+          json:
+            data: {}
+
+  - name: 'Analytics Load Test'
+    weight: 20
+    flow:
+      - post:
+          url: '/api/auth/login'
+          json:
+            username: 'admin'
+            password: 'admin123'
+          capture:
+            - json: '$.token'
+              as: 'authToken'
+      - get:
+          url: '/api/analytics/overview'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+
+  - name: 'Health Check Load Test'
+    weight: 10
+    flow:
+      - get:
+          url: '/api/health'
