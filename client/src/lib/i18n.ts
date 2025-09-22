@@ -1,220 +1,137 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import Backend from 'i18next-http-backend';
 
-// Arabic translations
-const arabicResources = {
-  common: {
-    // Header
-    ministry: "وزارة الاتصالات السورية",
-    systemName: "نظام التواصل الإلكتروني للشركات الناشئة",
-    home: "الرئيسية",
-    about: "عن النظام",
-    contact: "اتصل بنا",
-    help: "المساعدة",
-    login: "تسجيل الدخول",
-    
-    // Banner
-    bannerTitle: "نظام التواصل للشركات المتأثرة بالعقوبات",
-    bannerText: "منصة وزارة الاتصالات السورية لجمع معلومات حول الشركات الناشئة والأعمال المتأثرة بالعقوبات ومساعدتها في التغلب على التحديات",
-    startNow: "ابدأ الآن",
-    learnMore: "معرفة المزيد",
-    
-    // About section
-    aboutSystem: "عن نظام التواصل",
-    dataCollection: "جمع المعلومات",
-    dataCollectionText: "نجمع معلومات عن احتياجات الشركات والتحديات التي تواجهها بسبب العقوبات لتقديم الدعم المناسب",
-    needsAnalysis: "تحليل الاحتياجات",
-    needsAnalysisText: "تحليل متطلبات التكامل التقني والتحديات المتعلقة بالعقوبات لوضع خطط مساعدة فعالة",
-    support: "تقديم الدعم",
-    supportText: "العمل مع الشركات لتوفير الحلول والموارد اللازمة للتغلب على العقبات ومواصلة النمو",
-    whoWeAre: "من نحن؟",
-    whoWeAreText1: "نحن فريق متخصص في وزارة الاتصالات السورية نعمل على دعم الشركات الناشئة والأعمال المتأثرة بالعقوبات الاقتصادية.",
-    whoWeAreText2: "هدفنا هو فهم التحديات التي تواجهها وتوفير الموارد والدعم اللازمين لمساعدتك على النمو والازدهار رغم هذه التحديات.",
-    technicalSupport: "دعم تقني",
-    legalResources: "موارد قانونية",
-    businessConsulting: "استشارات أعمال",
-    financialSolutions: "حلول تمويلية",
-    
-    // Form
-    formTitle: "استمارة تقديم المعلومات",
-    step: "الخطوة",
-    of: "من",
-    step1Title: "معلومات الشركة",
-    step2Title: "معلومات الاتصال",
-    step3Title: "التحديات واحتياجات التكنولوجيا",
-    step4Title: "الموافقة وتقديم الطلب",
-    next: "التالي",
-    previous: "السابق",
-    submit: "تقديم الطلب",
-    
-    // Form fields - Step 1
-    businessName: "اسم الشركة",
-    businessType: "نوع النشاط",
-    establishmentDate: "تاريخ التأسيس",
-    employeesCount: "عدد الموظفين",
-    address: "العنوان",
-    governorate: "المحافظة",
-    registrationNumber: "رقم السجل التجاري",
-    
-    // Business types
-    selectBusinessType: "اختر نوع النشاط",
-    technology: "تكنولوجيا المعلومات",
-    manufacturing: "تصنيع",
-    retail: "تجارة تجزئة",
-    services: "خدمات",
-    other: "أخرى",
-    
-    // Employees count
-    selectEmployeesCount: "اختر عدد الموظفين",
-    employees1_10: "1-10",
-    employees11_50: "11-50",
-    employees51_200: "51-200",
-    employeesMore: "أكثر من 200",
-    
-    // Governorates
-    selectGovernorate: "اختر المحافظة",
-    damascus: "دمشق",
-    aleppo: "حلب",
-    homs: "حمص",
-    hama: "حماة",
-    lattakia: "اللاذقية",
-    
-    // Form fields - Step 2
-    contactName: "اسم المسؤول",
-    position: "المنصب",
-    email: "البريد الإلكتروني",
-    phone: "رقم الهاتف",
-    alternativeContact: "معلومات اتصال بديلة",
-    website: "الموقع الإلكتروني",
-    
-    // Form fields - Step 3
-    challenges: "ما هي التحديات الرئيسية التي تواجهها شركتك بسبب العقوبات؟",
-    challenge1: "صعوبات في الحصول على التكنولوجيا أو البرمجيات",
-    challenge2: "قيود على المعاملات المالية الدولية",
-    challenge3: "صعوبات في الوصول إلى الأسواق الخارجية",
-    challenge4: "تحديات في استيراد المعدات أو المواد الخام",
-    challenge5: "قيود على خدمات الاستضافة السحابية والخدمات الرقمية",
-    challengeOther: "أخرى",
-    challengeDetails: "اشرح بالتفصيل كيف أثرت العقوبات على أعمالك",
-    techNeeds: "ما هي احتياجاتك التقنية الحالية؟",
-    techNeed1: "برمجيات وتطبيقات",
-    techNeed2: "خدمات استضافة وبنية تحتية سحابية",
-    techNeed3: "أنظمة دفع إلكتروني وحلول مالية",
-    techNeed4: "معدات وأجهزة تقنية",
-    techNeed5: "خدمات تدريب وتطوير للموظفين",
-    techNeedOther: "أخرى",
-    techDetails: "اشرح احتياجاتك التقنية بالتفصيل",
-    
-    // Form fields - Step 4
-    consentTitle: "الموافقة على استخدام البيانات",
-    consentDescription: "بتقديم هذا النموذج، فإنك توافق على أن وزارة الاتصالات السورية قد تستخدم المعلومات المقدمة للأغراض التالية:",
-    consentItem1: "تحليل احتياجات الشركات المتأثرة بالعقوبات",
-    consentItem2: "تطوير برامج وحلول مخصصة للمساعدة",
-    consentItem3: "التواصل معك بخصوص احتياجات شركتك والحلول المحتملة",
-    consentItem4: "مشاركة معلومات مجمعة (غير شخصية) مع الجهات المعنية للمساعدة في تطوير السياسات",
-    consentNote: "لن يتم مشاركة معلوماتك الشخصية مع أي طرف ثالث دون موافقتك المسبقة.",
-    consentCheckbox: "أوافق على استخدام المعلومات المقدمة وفقًا للشروط المذكورة أعلاه",
-    communicationCheckbox: "أرغب في تلقي تحديثات وإشعارات من وزارة الاتصالات حول البرامج والموارد المتاحة",
-    additionalComments: "ملاحظات إضافية",
-    
-    // Validation
-    required: "هذا الحقل مطلوب",
-    invalidEmail: "البريد الإلكتروني غير صالح",
-    invalidPhone: "رقم الهاتف غير صالح",
-    consentRequired: "يجب الموافقة على شروط استخدام البيانات للمتابعة",
-    loading: "جاري الإرسال...",
-    
-    // Confirmation
-    confirmationTitle: "تم تقديم المعلومات بنجاح",
-    confirmationMessage: "شكراً لك على تقديم معلومات شركتك. سيقوم فريقنا بمراجعة المعلومات والتواصل معك قريباً.",
-    requestNumber: "رقم الطلب",
-    returnHome: "العودة للرئيسية",
-    printConfirmation: "طباعة التأكيد",
-    
-    // Admin
-    
-    businessRequests: "طلبات الشركات",
-    search: "بحث...",
-    allRequests: "جميع الطلبات",
-    pending: "قيد المراجعة",
-    processed: "تمت المعالجة",
-    requestID: "رقم الطلب",
-    businessNameHeader: "اسم الشركة",
-    businessTypeHeader: "نوع النشاط",
-    governorateHeader: "المحافظة",
-    submissionDate: "تاريخ التقديم",
-    status: "الحالة",
-    actions: "الإجراءات",
-    view: "عرض",
-    process: "معالجة",
-    edit: "تعديل",
-    contactAction: "تواصل",
-    
-    // Status
-    statusPending: "قيد المراجعة",
-    statusProcessed: "تمت المعالجة",
-    statusNeedsInfo: "بحاجة لمعلومات إضافية",
-    
-    // Pagination
-    showing: "عرض",
-    to: "إلى",
-    from: "من أصل",
-    records: "سجل",
-    
-    // Footer
-    ministry_footer: "وزارة الاتصالات السورية",
-    ministry_description: "نعمل على دعم الشركات الناشئة والأعمال السورية في مواجهة التحديات وتحقيق النمو المستدام.",
-    quickLinks: "روابط سريعة",
-    ministryServices: "خدمات الوزارة",
-    startupSupport: "دعم الشركات الناشئة",
-    technicalConsulting: "الاستشارات التقنية",
-    trainingPrograms: "برامج التدريب والتطوير",
-    legalFacilitation: "التسهيلات القانونية",
-    fundingInitiatives: "مبادرات التمويل",
-    newsletter: "النشرة الإخبارية",
-    newsletterDescription: "اشترك للحصول على آخر الأخبار والتحديثات من وزارة الاتصالات.",
-    emailPlaceholder: "البريد الإلكتروني",
-    subscribe: "اشتراك",
-    copyright: "© 2023 وزارة الاتصالات والتقانة. جميع الحقوق محفوظة.",
-    privacyPolicy: "سياسة الخصوصية",
-    termsOfUse: "شروط الاستخدام",
-    siteMap: "خريطة الموقع",
-    
-    // Support
-    supportTitle: "الدعم والمساعدة",
-    contactUs: "اتصل بنا",
-    addressLabel: "العنوان",
-    addressValue: "وزارة الاتصالات والتقانة، شارع الثورة، دمشق، سوريا",
-    phoneLabel: "الهاتف",
-    phoneValue: "+963 11 123 4567",
-    emailLabel: "البريد الإلكتروني",
-    emailValue: "support@moct.gov.sy",
-    workHoursLabel: "ساعات العمل",
-    workHoursValue: "الأحد - الخميس: 8:00 صباحًا - 3:30 مساءً",
-    faq: "الأسئلة الشائعة",
-    faqQuestion1: "من يمكنه التقديم في هذا النظام؟",
-    faqAnswer1: "يمكن لجميع الشركات السورية المتأثرة بالعقوبات الاقتصادية التقديم، بما في ذلك الشركات الناشئة والشركات الصغيرة والمتوسطة والكبيرة.",
-    faqQuestion2: "كيف سيتم استخدام معلوماتي؟",
-    faqAnswer2: "ستستخدم المعلومات المقدمة لفهم احتياجات الشركات وتصميم برامج دعم مناسبة. ستعامل جميع المعلومات بسرية تامة ولن تشارك مع أطراف ثالثة دون موافقتك.",
-    faqQuestion3: "ما هي الخطوات بعد تقديم الطلب؟",
-    faqAnswer3: "بعد تقديم الطلب، ستتلقى تأكيدًا بالاستلام. سيقوم فريقنا بمراجعة المعلومات والتواصل معك خلال 5-7 أيام عمل لمتابعة طلبك.",
-    faqQuestion4: "هل يمكنني تعديل معلوماتي بعد التقديم؟",
-    faqAnswer4: "نعم، يمكنك التواصل مع فريق الدعم لتعديل أي معلومات بعد التقديم. سيتم توفير رابط لتحديث المعلومات في رسالة التأكيد."
-  }
+// Import translation files
+import enTranslations from '../locales/en/translation.json';
+import arTranslations from '../locales/ar/translation.json';
+
+const resources = {
+  en: {
+    translation: enTranslations,
+  },
+  ar: {
+    translation: arTranslations,
+  },
 };
 
 i18n
+  .use(Backend)
+  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {
-      ar: arabicResources
-    },
-    lng: 'ar',
-    fallbackLng: 'ar',
+    resources,
+    fallbackLng: 'en',
+    debug: process.env.NODE_ENV === 'development',
+    
     interpolation: {
-      escapeValue: false // React already safes from XSS
+      escapeValue: false, // React already does escaping
     },
-    defaultNS: 'common'
+    
+    detection: {
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage'],
+    },
+    
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    },
+    
+    // RTL support
+    lng: 'en',
+    supportedLngs: ['en', 'ar'],
+    
+    // Namespace configuration
+    defaultNS: 'translation',
+    ns: ['translation', 'common', 'forms', 'admin', 'auth'],
+    
+    // React i18next options
+    react: {
+      useSuspense: false,
+    },
   });
+
+// Helper function to check if language is RTL
+export const isRTL = (lng: string): boolean => {
+  return ['ar'].includes(lng);
+};
+
+// Helper function to get text direction
+export const getTextDirection = (lng: string): 'ltr' | 'rtl' => {
+  return isRTL(lng) ? 'rtl' : 'ltr';
+};
+
+// Helper function to get opposite text direction
+export const getOppositeTextDirection = (lng: string): 'ltr' | 'rtl' => {
+  return isRTL(lng) ? 'ltr' : 'rtl';
+};
+
+// Helper function to format numbers based on locale
+export const formatNumber = (number: number, lng: string): string => {
+  const locale = lng === 'ar' ? 'ar-SY' : lng === 'ku' ? 'ku-Arab-IQ' : 'en-US';
+  return new Intl.NumberFormat(locale).format(number);
+};
+
+// Helper function to format dates based on locale
+export const formatDate = (date: Date, lng: string): string => {
+  const locale = lng === 'ar' ? 'ar-SY' : lng === 'ku' ? 'ku-Arab-IQ' : 'en-US';
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+};
+
+// Helper function to format currency based on locale
+export const formatCurrency = (amount: number, lng: string, currency: string = 'SYP'): string => {
+  const locale = lng === 'ar' ? 'ar-SY' : lng === 'ku' ? 'ku-Arab-IQ' : 'en-US';
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(amount);
+};
+
+// Helper function to get language name in its native script
+export const getLanguageName = (lng: string): string => {
+  const names: Record<string, string> = {
+    en: 'English',
+    ar: 'العربية',
+  };
+  return names[lng] || lng;
+};
+
+// Helper function to get language flag emoji
+export const getLanguageFlag = (lng: string): string => {
+  const flags: Record<string, string> = {
+    en: '🇺🇸',
+    ar: '🇸🇾',
+  };
+  return flags[lng] || '🌐';
+};
+
+// Helper function to change language and update document direction
+export const changeLanguage = async (lng: string): Promise<void> => {
+  await i18n.changeLanguage(lng);
+  
+  // Update document direction
+  const direction = getTextDirection(lng);
+  document.documentElement.dir = direction;
+  document.documentElement.lang = lng;
+  
+  // Update body class for RTL styling
+  document.body.classList.remove('ltr', 'rtl');
+  document.body.classList.add(direction);
+  
+  // Store language preference
+  localStorage.setItem('i18nextLng', lng);
+};
+
+// Initialize document direction on load
+const currentLng = i18n.language || 'en';
+const direction = getTextDirection(currentLng);
+document.documentElement.dir = direction;
+document.documentElement.lang = currentLng;
+document.body.classList.add(direction);
 
 export default i18n;
