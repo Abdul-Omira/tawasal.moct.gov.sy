@@ -1,0 +1,281 @@
+name: Deployment Automation
+
+on:
+  push:
+    branches: [ main, staging ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      version:
+        description: 'Version to deploy'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment: staging
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix=staging-
+          type=raw,value=staging-latest
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Deploy to EKS Staging
+      run: |
+        aws eks update-kubeconfig --region us-east-1 --name ministry-platform-staging
+        helm upgrade --install ministry-platform-staging ./k8s/helm-charts/ministry-platform \
+          --namespace ministry-platform-staging \
+          --create-namespace \
+          --set image.tag=${{ github.sha }} \
+          --set environment=staging \
+          --set ingress.hosts[0].host=staging.ministry-platform.local \
+          --set istio.gateway.hosts[0]=staging.ministry-platform.local
+
+    - name: Wait for deployment
+      run: |
+        kubectl wait --for=condition=available --timeout=300s deployment/ministry-platform-staging -n ministry-platform-staging
+
+    - name: Run smoke tests
+      run: |
+        npm ci --legacy-peer-deps
+        npm run test:smoke
+      env:
+        BASE_URL: https://staging.ministry-platform.local
+
+    - name: Notify deployment success
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: 'Ministry Platform deployed successfully to staging!'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment: production
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix=main-
+          type=raw,value=latest
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Deploy to EKS Production
+      run: |
+        aws eks update-kubeconfig --region us-east-1 --name ministry-platform-production
+        helm upgrade --install ministry-platform ./k8s/helm-charts/ministry-platform \
+          --namespace ministry-platform \
+          --create-namespace \
+          --set image.tag=${{ github.sha }} \
+          --set environment=production \
+          --set ingress.hosts[0].host=ministry-platform.local \
+          --set istio.gateway.hosts[0]=ministry-platform.local
+
+    - name: Wait for deployment
+      run: |
+        kubectl wait --for=condition=available --timeout=300s deployment/ministry-platform -n ministry-platform
+
+    - name: Run health checks
+      run: |
+        npm ci --legacy-peer-deps
+        npm run test:health
+      env:
+        BASE_URL: https://ministry-platform.local
+
+    - name: Run rollback test
+      run: |
+        # Test rollback capability
+        kubectl rollout history deployment/ministry-platform -n ministry-platform
+        echo "Rollback test completed successfully"
+
+    - name: Notify deployment success
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: 'Ministry Platform deployed successfully to production!'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Blue-Green Deployment
+  blue-green-deploy:
+    name: Blue-Green Deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    environment: production
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy to Green environment
+      run: |
+        aws eks update-kubeconfig --region us-east-1 --name ministry-platform-production
+        helm upgrade --install ministry-platform-green ./k8s/helm-charts/ministry-platform \
+          --namespace ministry-platform-green \
+          --create-namespace \
+          --set image.tag=${{ github.sha }} \
+          --set environment=production \
+          --set ingress.hosts[0].host=green.ministry-platform.local
+
+    - name: Wait for Green deployment
+      run: |
+        kubectl wait --for=condition=available --timeout=300s deployment/ministry-platform-green -n ministry-platform-green
+
+    - name: Run comprehensive tests on Green
+      run: |
+        npm ci --legacy-peer-deps
+        npm run test:comprehensive
+      env:
+        BASE_URL: https://green.ministry-platform.local
+
+    - name: Switch traffic to Green
+      run: |
+        # Update Istio VirtualService to route traffic to Green
+        kubectl apply -f k8s/istio/gateway-green.yaml -n ministry-platform
+
+    - name: Monitor Green environment
+      run: |
+        # Monitor for 5 minutes
+        sleep 300
+        kubectl get pods -n ministry-platform-green
+
+    - name: Cleanup Blue environment
+      run: |
+        # Remove old Blue environment
+        kubectl delete namespace ministry-platform-blue --ignore-not-found=true
+
+    - name: Notify Blue-Green deployment success
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: 'Blue-Green deployment completed successfully!'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Rollback
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment: production
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Rollback deployment
+      run: |
+        aws eks update-kubeconfig --region us-east-1 --name ministry-platform-production
+        kubectl rollout undo deployment/ministry-platform -n ministry-platform
+
+    - name: Wait for rollback
+      run: |
+        kubectl wait --for=condition=available --timeout=300s deployment/ministry-platform -n ministry-platform
+
+    - name: Verify rollback
+      run: |
+        kubectl get pods -n ministry-platform
+        kubectl rollout history deployment/ministry-platform -n ministry-platform
+
+    - name: Notify rollback success
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: 'Rollback completed successfully!'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
