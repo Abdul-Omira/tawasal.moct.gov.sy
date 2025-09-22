@@ -443,6 +443,6 @@ This constitution serves as the foundation for maintaining high standards of cod
 
 ---
 
-*Last Updated: September 2024*  
+*Last Updated: September 2025*  
 *Version: 1.0*  
-*Next Review: December 2024*
+*Next Review: December 2025*
