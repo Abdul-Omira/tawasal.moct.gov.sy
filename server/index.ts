@@ -26,10 +26,10 @@ console.log('🛡️ Initializing enterprise security configuration...');
 // 1. ENTERPRISE RATE LIMITING
 // Production values: More restrictive for better security
 
-// General API rate limiting - Reduced for production security
+// General API rate limiting - Strict for production security
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === "production" ? 2000 : 5000, // Production: 2000 requests per 15min
+  max: process.env.NODE_ENV === "production" ? 200 : 5000, // Production: 200 requests per 15min (was 2000 - too high)
   message: {
     error: "Too many requests from this IP, please try again later",
     retryAfter: "15 minutes"
@@ -107,19 +107,21 @@ export const uploadLimiter = rateLimit({
   }
 });
 
-// Form submission rate limiting
+// Form submission rate limiting - STRICT: max 5 per 10 minutes to prevent email flooding
 export const formLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: process.env.NODE_ENV === 'production' ? 1000 : 2000, // 1000 in production, 2000 in development
+  max: process.env.NODE_ENV === 'production' ? 5 : 20, // Production: 5 submissions per 10min (was 1000 - WAY too high)
   message: {
     error: "Too many form submissions from this IP, please try again later",
     retryAfter: "10 minutes"
   },
+  standardHeaders: true,
+  legacyHeaders: false,
   handler: (req: Request, res: Response) => {
-    log(`Form rate limit exceeded for IP: ${req.ip}`);
+    log(`🚨 Form rate limit exceeded for IP: ${req.ip} - potential abuse detected`);
     res.status(429).json({
       error: "Form rate limit exceeded",
-      message: "Too many form submissions from this IP, please try again later",
+      message: "تم تجاوز حد إرسال النماذج - يرجى الانتظار قبل المحاولة مرة أخرى",
       retryAfter: "10 minutes"
     });
   }
@@ -129,11 +131,11 @@ export const formLimiter = rateLimit({
 app.use(generalLimiter);
 
 console.log('🚦 Enterprise rate limiting configured:');
-console.log(`   📊 General API: ${process.env.NODE_ENV === "production" ? "2000" : "5000"} requests/15min`);
+console.log(`   📊 General API: ${process.env.NODE_ENV === "production" ? "200" : "5000"} requests/15min`);
 console.log('   👨‍💼 Admin API: 500 requests/15min');
 console.log('   🔒 Login: 3 attempts/15min');
 console.log('   📁 Upload: 10 files/hour');
-console.log(`   📝 Forms: ${process.env.NODE_ENV === "production" ? "1000" : "2000"} submissions/10min`);
+console.log(`   📝 Forms: ${process.env.NODE_ENV === "production" ? "5" : "20"} submissions/10min`);
 
 // 2. COMPREHENSIVE SECURITY HEADERS
 const helmetConfig = {

@@ -132,6 +132,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import rate limiters
   const { uploadLimiter, formLimiter, adminLimiter } = await import('./index');
   
+  // Import IP blocking middleware for form abuse prevention
+  const { ipBlockingMiddleware } = await import('./rate-limiter-secure');
+  
   // Import production security enhancement
   const { productionSecurityMiddleware, productionRateLimitingMiddleware } = await import('./enhanced-security-seamless-production');
   
@@ -195,7 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true, message: "Test successful" });
   });
 
-  app.post("/api/citizen-communications", formLimiter, securityValidationMiddleware, async (req: Request, res: Response) => {
+  app.post("/api/citizen-communications", ipBlockingMiddleware, formLimiter, securityValidationMiddleware, async (req: Request, res: Response) => {
     try {
       console.log("📝 [SECURITY] Endpoint hit: /api/citizen-communications");
       console.log("📝 [REQUEST] Headers:", req.headers);
@@ -599,7 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/business-submissions", async (req: Request, res: Response) => {
+  app.post("/api/business-submissions", ipBlockingMiddleware, formLimiter, securityValidationMiddleware, async (req: Request, res: Response) => {
     try {
       const { clientMetadata, ...submission } = req.body;
       
